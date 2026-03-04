@@ -1,0 +1,1718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+  <meta name="version" content="20260304_060855">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 VAT Filing Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0B1F3A;--blue:#1558A8;--accent:#F04E37;--gold:#E8A020;--teal:#0E8C76;
+  --green:#1A9A5E;--amber:#D97706;--red:#DC2626;--purple:#6D28D9;
+  --bg:#F2F5FA;--card:#fff;--border:#D8E3F0;--text:#1A2B42;--muted:#6B7F99;
+  --cal-fill:#D9EAFB;--cal-we:#EEF5FC;
+  --shadow:0 2px 12px rgba(11,31,58,.10);--shadow-lg:0 8px 32px rgba(11,31,58,.15);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* ── PASSWORD GATE ── */
+#pw-gate{position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#0B1F3A 0%,#1A3D6B 60%,#0f3460 100%);display:flex;align-items:center;justify-content:center;}
+#pw-gate::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 50%,rgba(232,160,32,.08),transparent 60%),radial-gradient(ellipse at 75% 20%,rgba(21,88,168,.15),transparent 55%);}
+.pw-box{position:relative;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:44px 48px;width:100%;max-width:420px;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.4);backdrop-filter:blur(12px);animation:pw-in .5s cubic-bezier(.34,1.56,.64,1) both;}
+@keyframes pw-in{from{opacity:0;transform:translateY(24px) scale(.96)}to{opacity:1;transform:none}}
+.pw-logo{width:62px;height:62px;background:rgba(232,160,32,.15);border:2px solid rgba(232,160,32,.3);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 20px;}
+.pw-title{font-size:22px;font-weight:700;color:white;margin-bottom:6px;}
+.pw-sub{font-size:13px;color:#8FAFD4;margin-bottom:32px;line-height:1.5;}
+.pw-label{display:block;text-align:left;font-size:11px;font-weight:700;color:#8FAFD4;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;}
+.pw-input-wrap{position:relative;margin-bottom:10px;}
+.pw-input{width:100%;padding:13px 48px 13px 16px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);border-radius:10px;font-size:15px;color:white;font-family:'DM Mono',monospace;letter-spacing:2px;transition:border-color .2s;outline:none;}
+.pw-input::placeholder{color:rgba(255,255,255,.25);letter-spacing:0;font-family:'DM Sans',sans-serif;font-size:13px;}
+.pw-input:focus{border-color:rgba(232,160,32,.6);}
+.pw-eye{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#8FAFD4;font-size:16px;padding:4px;transition:color .2s;}
+.pw-eye:hover{color:white;}
+.pw-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--gold),#d4890a);color:#0B1F3A;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;margin-top:4px;box-shadow:0 4px 20px rgba(232,160,32,.3);}
+.pw-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(232,160,32,.45);}
+.pw-error{font-size:12px;color:#FF7B6B;font-weight:600;margin-top:10px;background:rgba(240,78,55,.12);border:1px solid rgba(240,78,55,.25);border-radius:7px;padding:8px 12px;display:none;animation:shake .35s ease both;}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.pw-error.show{display:block;}
+.pw-foot{font-size:11px;color:rgba(255,255,255,.2);margin-top:22px;}
+#pw-app{display:none;}
+
+/* ── HEADER ── */
+.header{background:linear-gradient(135deg,var(--navy),#1A3D6B);color:white;padding:22px 36px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid var(--gold);}
+.hbrand{display:flex;align-items:center;gap:14px;}
+.hicon{width:44px;height:44px;background:rgba(255,255,255,.12);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;}
+.hbrand h1{font-size:20px;font-weight:700;}
+.hbrand p{font-size:11px;color:#8FAFD4;margin-top:2px;font-family:'DM Mono',monospace;}
+.hstats{display:flex;gap:14px;}
+.hstat{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:10px 18px;text-align:center;}
+.hstat .n{font-size:24px;font-weight:700;color:var(--gold);font-family:'DM Mono',monospace;}
+.hstat .l{font-size:10px;color:#8FAFD4;text-transform:uppercase;letter-spacing:.8px;margin-top:1px;}
+
+/* ── LEGEND ── */
+.legend{background:white;padding:9px 36px;display:flex;align-items:center;gap:22px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);}
+.leg-box{width:14px;height:14px;border-radius:3px;flex-shrink:0;}
+.leg-box.f{background:var(--cal-fill);border:1px solid #9DC8EC;}
+.leg-box.d{background:white;border:2px solid var(--accent);}
+.leg-box.w{background:var(--cal-we);border:1px solid #C5DAEE;}
+
+/* ── NAV ── */
+.nav{background:white;border-bottom:2px solid var(--border);padding:0 36px;display:flex;gap:4px;position:sticky;top:0;z-index:50;}
+.nav-btn{padding:12px 18px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:none;color:var(--muted);border-bottom:3px solid transparent;transition:all .2s;margin-bottom:-2px;display:flex;align-items:center;gap:7px;}
+.nav-btn:hover{color:var(--blue);}
+.nav-btn.active{color:var(--navy);border-bottom-color:var(--blue);}
+.nb{font-size:10px;background:var(--border);color:var(--muted);padding:1px 6px;border-radius:8px;font-family:'DM Mono',monospace;}
+.nav-btn.active .nb{background:var(--blue);color:white;}
+
+.main{padding:26px 36px;max-width:1400px;margin:0 auto;}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+/* ── FILTER BAR ── */
+.filter-bar{display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap;}
+.filter-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+.fbtn{padding:6px 16px;border-radius:20px;border:1.5px solid var(--border);background:white;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;color:var(--muted);font-family:'DM Sans',sans-serif;}
+.fbtn:hover{border-color:var(--blue);color:var(--blue);}
+.fbtn.active{background:var(--navy);color:white;border-color:var(--navy);}
+
+/* ── CALENDAR ── */
+.q-section{margin-bottom:34px;}
+.q-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:13px;display:flex;align-items:center;gap:10px;}
+.q-label::after{content:'';flex:1;height:1px;background:var(--border);}
+.months-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.month-card{background:white;border-radius:14px;overflow:hidden;box-shadow:var(--shadow);border:1px solid var(--border);transition:transform .2s,box-shadow .2s;}
+.month-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);}
+.month-hdr{background:var(--navy);color:white;padding:11px 14px;display:flex;justify-content:space-between;align-items:center;}
+.month-name{font-size:14px;font-weight:700;}
+.due-chip{background:var(--accent);color:white;font-size:10px;font-weight:700;padding:3px 9px;border-radius:10px;font-family:'DM Mono',monospace;}
+.cal-wrap{padding:10px 12px 6px;}
+.day-hdrs{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:3px;}
+.dh{font-size:9px;font-weight:700;color:var(--muted);text-align:center;text-transform:uppercase;}
+.days-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.dc{aspect-ratio:1;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;background:var(--cal-fill);color:var(--text);transition:transform .1s;}
+.dc:hover{transform:scale(1.15);}
+.dc.empty{background:transparent;pointer-events:none;}
+.dc.wknd{background:var(--cal-we);color:#7AAAC8;}
+.dc.due{background:white;border:2px solid var(--accent);color:var(--accent);font-weight:800;box-shadow:0 0 0 3px rgba(240,78,55,.12);}
+.co-section{padding:8px 12px 12px;border-top:1px solid var(--border);}
+.co-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;}
+.co-row{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+.co-tag{background:var(--navy);color:white;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;min-width:48px;text-align:center;font-family:'DM Mono',monospace;transition:background .15s;text-decoration:none;display:inline-block;}
+.co-tag.linked{background:var(--blue);}
+.co-tag.linked:hover{background:var(--navy);}
+.co-tag.new-co{background:var(--purple);}
+.co-period{font-size:10px;color:var(--muted);}
+
+/* ── SUMMARY TABLE ── */
+.table-wrap{background:white;border-radius:14px;overflow:hidden;box-shadow:var(--shadow);border:1px solid var(--border);}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead tr{background:var(--navy);color:white;}
+thead th{padding:13px 16px;text-align:left;font-weight:600;font-size:12px;letter-spacing:.3px;white-space:nowrap;}
+tbody tr{border-bottom:1px solid var(--border);transition:background .15s;}
+tbody tr:hover{background:#F7FBFF;}
+tbody tr:last-child{border-bottom:none;}
+td{padding:11px 16px;vertical-align:middle;}
+.td-month{font-weight:700;color:var(--navy);}
+.td-due{color:var(--accent);font-weight:700;font-family:'DM Mono',monospace;font-size:12px;}
+.td-tags{display:flex;gap:5px;flex-wrap:wrap;}
+.sm-tag{background:var(--navy);color:white;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;font-family:'DM Mono',monospace;}
+.sm-tag.new-co{background:var(--purple);}
+.td-period{color:var(--muted);font-size:12px;font-family:'DM Mono',monospace;}
+td.td-count{font-weight:700;text-align:center;}
+
+/* ── COMPANIES GRID ── */
+.companies-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:16px;}
+.company-card{background:white;border-radius:14px;border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;transition:box-shadow .2s;}
+.company-card:hover{box-shadow:var(--shadow-lg);}
+.company-card.new-co{border-color:#C4B5FD;}
+.cc-header{background:var(--navy);color:white;padding:14px 18px;display:flex;align-items:flex-start;justify-content:space-between;}
+.cc-header.new-co{background:linear-gradient(135deg,var(--purple),#4C1D95);}
+.cc-initials{font-size:18px;font-weight:700;font-family:'DM Mono',monospace;color:var(--gold);}
+.cc-name{font-size:11px;color:#8FAFD4;margin-top:3px;line-height:1.4;max-width:270px;}
+.cc-project{font-size:10px;background:rgba(255,255,255,.1);padding:3px 8px;border-radius:6px;font-family:'DM Mono',monospace;white-space:nowrap;}
+.cc-body{padding:14px 18px;}
+.cc-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:9px;}
+.cc-icon{font-size:14px;min-width:18px;margin-top:2px;}
+.cc-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:700;margin-bottom:2px;}
+.cc-val{font-size:12px;color:var(--text);}
+.cc-val a{color:var(--blue);text-decoration:none;font-family:'DM Mono',monospace;font-size:11px;}
+.cc-val a:hover{text-decoration:underline;}
+.cc-filings{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+.cc-filings-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;font-weight:700;letter-spacing:.5px;margin-bottom:7px;}
+.filing-chips{display:flex;gap:6px;flex-wrap:wrap;}
+.f-chip{background:#EEF5FF;border:1px solid #C5D9F0;border-radius:8px;padding:5px 10px;text-align:center;}
+.f-chip.new-co{background:#F5F3FF;border-color:#C4B5FD;}
+.f-chip .fm{font-size:11px;font-weight:700;color:var(--navy);}
+.f-chip .fd{font-size:9px;color:var(--accent);font-family:'DM Mono',monospace;font-weight:700;}
+.new-badge{background:var(--purple);color:white;font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;letter-spacing:.3px;}
+.delete-co-btn{background:#FEF0EE;color:var(--accent);border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;margin-left:auto;}
+.delete-co-btn:hover{background:var(--accent);color:white;}
+
+/* ── REMINDERS TAB ── */
+.rem-layout{display:grid;grid-template-columns:1fr 380px;gap:20px;align-items:start;}
+.next-deadline-banner{border-radius:16px;overflow:hidden;box-shadow:var(--shadow-lg);margin-bottom:20px;}
+.ndb-inner{background:linear-gradient(135deg,#0B1F3A,#1A3D6B);color:white;padding:22px 28px;display:flex;align-items:center;justify-content:space-between;gap:20px;}
+.ndb-left .eyebrow{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#8FAFD4;margin-bottom:4px;font-weight:700;}
+.ndb-left .deadline-title{font-size:22px;font-weight:700;margin-bottom:3px;}
+.ndb-left .deadline-sub{font-size:13px;color:#8FAFD4;}
+.ndb-countdown{text-align:center;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:14px 22px;min-width:140px;}
+.days-num{font-size:40px;font-weight:700;font-family:'DM Mono',monospace;line-height:1;}
+.days-num.urgent{color:var(--accent);}
+.days-num.soon{color:var(--gold);}
+.days-num.ok{color:#5DD88A;}
+.days-lbl{font-size:11px;color:#8FAFD4;text-transform:uppercase;letter-spacing:.5px;margin-top:3px;}
+.ndb-companies{background:rgba(255,255,255,.06);padding:12px 28px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-top:1px solid rgba(255,255,255,.08);}
+.ndb-companies span{font-size:11px;color:#8FAFD4;font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
+.deadlines-list{background:white;border-radius:14px;border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;}
+.dl-head{background:var(--navy);color:white;padding:13px 18px;font-size:13px;font-weight:700;display:flex;justify-content:space-between;align-items:center;}
+.dl-head-right{font-size:11px;color:#8FAFD4;font-weight:400;}
+.dl-item{display:flex;align-items:center;gap:14px;padding:13px 18px;border-bottom:1px solid var(--border);transition:background .15s;}
+.dl-item:hover{background:#F7FBFF;}
+.dl-item:last-child{border-bottom:none;}
+.dl-item.past{opacity:.45;}
+.dl-item.current{background:linear-gradient(90deg,#FFF9F0,white);border-left:3px solid var(--gold);}
+.dl-item.today{background:linear-gradient(90deg,#FFF0EE,white);border-left:3px solid var(--accent);}
+.dl-month-badge{min-width:46px;height:46px;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;}
+.dl-month-badge.past{background:#F0F4F8;color:var(--muted);}
+.dl-month-badge.upcoming{background:#EEF5FF;color:var(--navy);}
+.dl-month-badge.current{background:var(--gold);color:white;}
+.dl-month-badge.today{background:var(--accent);color:white;}
+.dl-month-badge .bm{font-size:12px;font-weight:800;}
+.dl-month-badge .bd{font-size:10px;font-family:'DM Mono',monospace;}
+.dl-info{flex:1;}
+.dl-title{font-size:13px;font-weight:700;color:var(--text);}
+.dl-period{font-size:11px;color:var(--muted);margin-top:2px;}
+.dl-cotags{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px;}
+.dl-cotag{background:var(--navy);color:white;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;font-family:'DM Mono',monospace;}
+.dl-cotag.new-co{background:var(--purple);}
+.dl-status{text-align:right;flex-shrink:0;}
+.status-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap;}
+.status-pill.past{background:#F0F4F8;color:var(--muted);}
+.status-pill.urgent{background:#FEF0EE;color:var(--red);}
+.status-pill.soon{background:#FFF8E8;color:var(--amber);}
+.status-pill.ok{background:#EEF5FF;color:var(--blue);}
+.dl-days{font-size:10px;color:var(--muted);margin-top:3px;text-align:right;font-family:'DM Mono',monospace;}
+.rem-panel{display:flex;flex-direction:column;gap:14px;}
+.panel-card{background:white;border-radius:14px;border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;}
+.panel-head{padding:13px 18px;font-size:13px;font-weight:700;color:white;}
+.panel-head.navy{background:var(--navy);}
+.panel-head.teal{background:var(--teal);}
+.panel-head.blue{background:var(--blue);}
+.panel-body{padding:16px 18px;}
+.input-group{margin-bottom:12px;}
+.input-group label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px;}
+.input-group input,.input-group textarea,.input-group select{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);background:white;transition:border-color .2s;}
+.input-group input:focus,.input-group textarea:focus,.input-group select:focus{outline:none;border-color:var(--blue);}
+.input-group textarea{resize:vertical;min-height:90px;line-height:1.5;}
+.copy-btn,.gen-btn,.action-btn{width:100%;padding:11px;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;margin-top:4px;}
+.copy-btn{background:#EEF5FF;color:var(--blue);}
+.copy-btn:hover{background:var(--blue);color:white;}
+.gen-btn{background:var(--navy);color:white;margin-bottom:8px;}
+.gen-btn:hover{background:var(--blue);}
+.notif-btn{width:100%;padding:11px;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;background:var(--teal);color:white;transition:background .2s;margin-top:8px;}
+.notif-btn:hover{background:#0a6e5a;}
+.notif-status{font-size:11px;padding:8px 12px;border-radius:7px;margin-top:8px;font-weight:600;display:none;}
+.notif-status.granted{background:#E8F8F0;color:var(--green);display:block;}
+.notif-status.denied{background:#FEF0EE;color:var(--red);display:block;}
+.alerts-strip{display:flex;flex-direction:column;gap:6px;}
+.alert-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:9px;border:1px solid;}
+.alert-item.urgent{background:#FFF0EE;border-color:#FBBCB3;}
+.alert-item.soon{background:#FFF8E8;border-color:#FCD97A;}
+.alert-item.ok{background:#EEF5FF;border-color:#C5D9F0;}
+.alert-icon{font-size:18px;flex-shrink:0;}
+.alert-text{flex:1;}
+.alert-text .at{font-size:12px;font-weight:700;color:var(--text);}
+.alert-text .as{font-size:11px;color:var(--muted);margin-top:1px;}
+.alert-days{font-size:12px;font-weight:700;font-family:'DM Mono',monospace;}
+.alert-days.urgent{color:var(--red);}
+.alert-days.soon{color:var(--amber);}
+.alert-days.ok{color:var(--blue);}
+
+/* ══════════════════════════════════════
+   ADD COMPANY TAB
+══════════════════════════════════════ */
+.add-co-layout{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start;}
+.form-card{background:white;border-radius:16px;border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;}
+.form-card-head{background:linear-gradient(135deg,var(--purple),#4C1D95);color:white;padding:16px 22px;display:flex;align-items:center;gap:10px;}
+.form-card-head .fch-icon{font-size:20px;}
+.form-card-head .fch-title{font-size:15px;font-weight:700;}
+.form-card-head .fch-sub{font-size:11px;color:rgba(255,255,255,.65);margin-top:2px;}
+.form-card-body{padding:22px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.form-row.full{grid-template-columns:1fr;}
+.field{display:flex;flex-direction:column;gap:5px;}
+.field label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+.field input,.field select,.field textarea{border:1.5px solid var(--border);border-radius:8px;padding:10px 13px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);background:white;transition:border-color .2s,box-shadow .2s;outline:none;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(109,40,217,.08);}
+.field input.error{border-color:var(--accent);}
+.field-hint{font-size:10px;color:var(--muted);margin-top:3px;}
+.field-err{font-size:10px;color:var(--accent);font-weight:600;margin-top:2px;display:none;}
+.field-err.show{display:block;}
+
+/* VAT cycle selector */
+.cycle-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:4px;}
+.cycle-opt{border:1.5px solid var(--border);border-radius:10px;padding:10px 8px;text-align:center;cursor:pointer;transition:all .2s;background:white;}
+.cycle-opt:hover{border-color:var(--purple);background:#F5F3FF;}
+.cycle-opt.selected{border-color:var(--purple);background:#F5F3FF;box-shadow:0 0 0 3px rgba(109,40,217,.1);}
+.cycle-opt .co-icon{font-size:18px;margin-bottom:4px;}
+.cycle-opt .co-name{font-size:11px;font-weight:700;color:var(--navy);}
+.cycle-opt .co-desc{font-size:9px;color:var(--muted);margin-top:2px;line-height:1.3;}
+
+/* Month checkboxes */
+.month-checks{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:4px;}
+.mcheck{display:flex;align-items:center;gap:5px;padding:7px 8px;border-radius:7px;border:1.5px solid var(--border);cursor:pointer;transition:all .15s;font-size:11px;font-weight:600;color:var(--muted);}
+.mcheck:hover{border-color:var(--purple);color:var(--purple);}
+.mcheck input{accent-color:var(--purple);width:13px;height:13px;}
+.mcheck.checked{border-color:var(--purple);background:#F5F3FF;color:var(--purple);}
+
+/* Submit button */
+.submit-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--purple),#4C1D95);color:white;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;box-shadow:0 4px 16px rgba(109,40,217,.25);display:flex;align-items:center;justify-content:center;gap:8px;}
+.submit-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(109,40,217,.35);}
+.submit-btn:active{transform:translateY(0);}
+
+/* New companies list */
+.new-co-list{background:white;border-radius:16px;border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;}
+.ncl-head{background:var(--navy);color:white;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:700;}
+.ncl-count{background:var(--purple);padding:2px 8px;border-radius:8px;font-family:'DM Mono',monospace;font-size:12px;}
+.ncl-empty{padding:44px;text-align:center;color:var(--muted);}
+.ncl-empty .e-icon{font-size:36px;margin-bottom:10px;}
+.ncl-empty p{font-size:13px;line-height:1.6;}
+.ncl-item{padding:16px 20px;border-bottom:1px solid var(--border);transition:background .15s;animation:slide-in .3s ease both;}
+@keyframes slide-in{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:none}}
+.ncl-item:last-child{border-bottom:none;}
+.ncl-item:hover{background:#FAFBFF;}
+.ncl-top{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.ncl-init{background:var(--purple);color:white;font-size:12px;font-weight:700;padding:4px 10px;border-radius:6px;font-family:'DM Mono',monospace;}
+.ncl-fullname{font-size:13px;font-weight:700;color:var(--navy);flex:1;}
+.ncl-detail{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;}
+.ncl-d{font-size:11px;color:var(--muted);}
+.ncl-d strong{color:var(--text);display:block;font-size:11px;font-family:'DM Mono',monospace;}
+.ncl-months{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;}
+.ncl-mchip{background:#F5F3FF;border:1px solid #C4B5FD;border-radius:6px;padding:3px 9px;font-size:10px;font-weight:700;color:var(--purple);}
+.ncl-actions{display:flex;gap:8px;}
+.ncl-edit-btn{flex:1;padding:7px;border-radius:7px;border:1.5px solid var(--border);background:white;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;color:var(--text);}
+.ncl-edit-btn:hover{border-color:var(--blue);color:var(--blue);}
+.ncl-del-btn{padding:7px 14px;border-radius:7px;border:none;background:#FEF0EE;color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.ncl-del-btn:hover{background:var(--accent);color:white;}
+
+/* Preview badge */
+.preview-box{background:#F5F3FF;border:1px solid #C4B5FD;border-radius:10px;padding:14px 16px;margin-top:4px;display:none;}
+.preview-box.show{display:block;}
+.preview-title{font-size:11px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+.preview-months{display:flex;gap:6px;flex-wrap:wrap;}
+.pm-chip{background:white;border:1px solid #C4B5FD;border-radius:7px;padding:5px 10px;text-align:center;}
+.pm-chip .pmm{font-size:11px;font-weight:700;color:var(--navy);}
+.pm-chip .pmd{font-size:9px;color:var(--accent);font-family:'DM Mono',monospace;font-weight:700;}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:white;padding:12px 18px;border-radius:10px;font-size:13px;font-weight:600;box-shadow:var(--shadow-lg);z-index:1000;transform:translateY(80px);opacity:0;transition:all .3s;max-width:360px;display:flex;align-items:center;gap:10px;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.success{border-left:4px solid var(--teal);}
+.toast.warn{border-left:4px solid var(--gold);}
+.toast.error{border-left:4px solid var(--accent);}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(11,31,58,.6);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .25s;}
+.modal-overlay.open{opacity:1;pointer-events:auto;}
+.modal-box{background:white;border-radius:16px;padding:28px;max-width:480px;width:100%;box-shadow:var(--shadow-lg);transform:translateY(20px);transition:transform .25s;}
+.modal-overlay.open .modal-box{transform:none;}
+.modal-title{font-size:16px;font-weight:700;color:var(--navy);margin-bottom:6px;}
+.modal-sub{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.5;}
+.modal-actions{display:flex;gap:10px;margin-top:20px;}
+.modal-cancel{flex:1;padding:11px;border:1.5px solid var(--border);border-radius:9px;background:white;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--muted);transition:all .2s;}
+.modal-cancel:hover{border-color:var(--navy);color:var(--navy);}
+.modal-confirm{flex:1;padding:11px;border:none;border-radius:9px;background:var(--accent);color:white;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s;}
+.modal-confirm:hover{background:#C0392B;}
+
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:#F0F4F8;}
+::-webkit-scrollbar-thumb{background:#C0CFDF;border-radius:3px;}
+@media(max-width:1100px){.rem-layout,.add-co-layout{grid-template-columns:1fr;}.months-grid{grid-template-columns:repeat(2,1fr);}.companies-grid{grid-template-columns:1fr;}.header{flex-direction:column;gap:14px;}.main,.nav,.legend{padding-left:16px;padding-right:16px;}}
+@media(max-width:700px){.months-grid{grid-template-columns:1fr;}.form-row{grid-template-columns:1fr;}.ndb-inner{flex-direction:column;}.hstats{flex-wrap:wrap;}.cycle-grid{grid-template-columns:1fr 1fr;}.month-checks{grid-template-columns:repeat(3,1fr);}}
+
+#tab-vendor .header{background:linear-gradient(135deg,#1e40af 0%,#2563eb 50%,#1d4ed8 100%);border-bottom:1px solid rgba(255,255,255,.15);padding:28px 40px 24px;box-shadow:0 4px 20px rgba(37,99,235,.25)}
+#tab-vendor .header-top{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px}
+#tab-vendor .logo{width:38px;height:38px;background:rgba(255,255,255,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+#tab-vendor h1{font-size:26px;color:#fff;letter-spacing:.04em}
+#tab-vendor .subtitle{color:rgba(255,255,255,.7);font-size:12px;letter-spacing:.1em;text-transform:uppercase;margin-top:4px}
+#tab-vendor .header-btns{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+#tab-vendor .btn-primary{background:#fff;color:#1e40af;border:none;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.05em;white-space:nowrap;font-family:Georgia,serif;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+#tab-vendor .btn-export{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4);color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:Georgia,serif}
+#tab-vendor .btn-primary:hover{background:#eff6ff}.btn-export:hover{background:rgba(255,255,255,.25)}
+#tab-vendor .sync-status{display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.8);background:rgba(255,255,255,.1);padding:6px 12px;border-radius:20px;border:1px solid rgba(255,255,255,.2)}
+#tab-vendor .sync-dot{width:8px;height:8px;border-radius:50%;background:#4ade80;animation:pulse 2s infinite}
+#tab-vendor .sync-dot.syncing{background:#fbbf24;animation:spin 1s linear infinite}
+#tab-vendor .sync-dot.error{background:#f87171;animation:none}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+#tab-vendor .stats{display:flex;gap:14px;margin-top:22px;flex-wrap:wrap}
+#tab-vendor .stat-card{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:12px 20px;min-width:110px}
+#tab-vendor .stat-val{font-size:24px;font-weight:700;color:#fff}.stat-label{font-size:11px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.08em;margin-top:2px}
+#tab-vendor .main{padding:24px 40px}
+#tab-vendor .filters{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
+#tab-vendor .filters input,#tab-vendor .filters select{background:#fff;border:1px solid #cbd5e1;border-radius:8px;padding:10px 14px;color:#1e293b;font-size:14px;outline:none;font-family:Georgia,serif;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+#tab-vendor .filters input:focus,#tab-vendor .filters select:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+#tab-vendor .filters input{flex:1;min-width:220px}
+#tab-vendor .record-count{color:#64748b;font-size:13px;white-space:nowrap}
+#tab-vendor .table-wrap{background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+#tab-vendor .table-scroll{overflow-x:auto}
+#tab-vendor table{width:100%;border-collapse:collapse;font-size:13px}
+#tab-vendor thead tr{background:#f8fafc;border-bottom:2px solid #e2e8f0}
+#tab-vendor th{padding:12px 14px;color:#475569;font-weight:700;letter-spacing:.06em;font-size:11px;text-transform:uppercase;cursor:pointer;white-space:nowrap;user-select:none;text-align:left}
+#tab-vendor th:hover{color:#2563eb}
+#tab-vendor tbody tr{border-top:1px solid #f1f5f9;cursor:pointer;transition:background .15s}
+#tab-vendor tbody tr:hover{background:#f0f7ff}
+#tab-vendor tbody tr.selected{background:#dbeafe}
+#tab-vendor td{padding:11px 14px;vertical-align:middle}
+#tab-vendor .td-name{font-weight:600;color:#1e40af}
+#tab-vendor .td-trn{font-family:monospace;color:#475569;letter-spacing:.04em;font-size:12px}
+#tab-vendor .badge{padding:3px 9px;border-radius:20px;font-size:11px;display:inline-block}
+#tab-vendor .badge-cat{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}
+#tab-vendor .badge-active{background:#dcfce7;color:#15803d;font-weight:600}
+#tab-vendor .badge-inactive{background:#fee2e2;color:#dc2626;font-weight:600}
+#tab-vendor .badge-review{background:#fef9c3;color:#b45309;font-weight:600}
+#tab-vendor .td-actions{display:flex;gap:6px}
+#tab-vendor .btn-edit{background:#f1f5f9;border:1px solid #cbd5e1;border-radius:6px;padding:4px 10px;color:#475569;cursor:pointer;font-size:11px;font-family:Georgia,serif}
+#tab-vendor .btn-edit:hover{color:#2563eb;border-color:#93c5fd;background:#eff6ff}
+#tab-vendor .btn-del{background:#fff0f0;border:1px solid #fca5a5;border-radius:6px;padding:4px 10px;color:#dc2626;cursor:pointer;font-size:11px;font-family:Georgia,serif}
+#tab-vendor .btn-del:hover{background:#fee2e2}
+#tab-vendor .empty-row td{padding:40px;text-align:center;color:#94a3b8}
+#tab-vendor .detail-panel{margin-top:20px;background:#fff;border:1px solid #bfdbfe;border-radius:12px;padding:24px 28px;box-shadow:0 2px 12px rgba(37,99,235,.08)}
+#tab-vendor .detail-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+#tab-vendor .detail-title{font-size:18px;color:#1e40af}
+#tab-vendor .btn-close{background:transparent;border:none;color:#94a3b8;cursor:pointer;font-size:20px}
+#tab-vendor .btn-close:hover{color:#475569}
+#tab-vendor .detail-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+#tab-vendor .detail-item label{display:block;color:#94a3b8;font-size:11px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+#tab-vendor .detail-item span{color:#1e293b;font-size:14px}
+#tab-vendor .detail-actions{margin-top:20px;display:flex;gap:10px}
+#tab-vendor .btn-danger{background:transparent;border:1px solid #fca5a5;color:#dc2626;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:13px;font-family:Georgia,serif}
+#tab-vendor .btn-danger:hover{background:#fee2e2}
+#tab-vendor .btn-submit{flex:1;padding:12px;background:linear-gradient(135deg,#1e40af,#1d4ed8);color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s;}
+#tab-vendor .btn-submit:hover{background:#1d4ed8;}
+#tab-vendor .btn-submit:disabled{opacity:.6;cursor:not-allowed;}
+#tab-vendor .btn-secondary{flex:1;padding:12px;background:white;color:#64748b;border:1.5px solid #e2e8f0;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+#tab-vendor .btn-secondary:hover{border-color:#94a3b8;color:#1e293b;}
+#tab-vendor .modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.4);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px;backdrop-filter:blur(4px)}
+#tab-vendor .modal{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:28px 32px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.15)}
+#tab-vendor .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+#tab-vendor .modal-title{font-size:20px;color:#1e40af}
+#tab-vendor .form-grid{display:grid;gap:14px}
+#tab-vendor .form-group label{display:block;color:#64748b;font-size:12px;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+#tab-vendor .form-group input,#tab-vendor .form-group select,#tab-vendor .form-group textarea{width:100%;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;padding:10px 14px;color:#1e293b;font-size:14px;outline:none;font-family:Georgia,serif}
+#tab-vendor .form-group input:focus,#tab-vendor .form-group select:focus,#tab-vendor .form-group textarea:focus{border-color:#2563eb;background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+#tab-vendor .form-group textarea{resize:vertical;min-height:60px}
+#tab-vendor .modal-actions{display:flex;gap:12px;margin-top:24px}
+#tab-vendor .btn-secondary{flex:1;background:#fff;border:1px solid #cbd5e1;color:#475569;padding:12px;border-radius:8px;font-size:14px;cursor:pointer;font-family:Georgia,serif}
+#tab-vendor .btn-secondary:hover{background:#f8fafc}
+#tab-vendor .btn-submit{flex:1;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;padding:12px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:Georgia,serif}
+#tab-vendor .btn-submit:hover{opacity:.92}
+#tab-vendor .loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2000;gap:16px}
+#tab-vendor .spinner{width:44px;height:44px;border:4px solid #e2e8f0;border-top-color:#2563eb;border-radius:50%;animation:spin 0.8s linear infinite}
+#tab-vendor .loading-text{color:#475569;font-size:15px;letter-spacing:.05em}
+#tab-vendor .toast{position:fixed;top:20px;right:20px;z-index:9999;padding:12px 20px;border-radius:8px;font-size:14px;box-shadow:0 4px 20px rgba(0,0,0,.15);border-left-width:4px;border-left-style:solid;display:flex;align-items:center;gap:10px}
+#tab-vendor .toast-success{background:#f0fdf4;border-color:#16a34a;color:#15803d}
+#tab-vendor .toast-error{background:#fef2f2;border-color:#dc2626;color:#dc2626}
+#tab-vendor .toast-info{background:#eff6ff;border-color:#2563eb;color:#1e40af}
+@media(max-width:600px){.header,.main{padding:16px}h1{font-size:20px}}
+
+</style>
+</head>
+<body>
+
+<!-- PASSWORD GATE -->
+<div id="pw-gate">
+  <div class="pw-box">
+    <div class="pw-logo">📋</div>
+    <div class="pw-title">VAT Filing Dashboard</div>
+    <div class="pw-sub">Finance Team · 2026<br>Enter your password to access</div>
+    <label class="pw-label">Password</label>
+    <div class="pw-input-wrap">
+      <input class="pw-input" type="password" id="pw-input" placeholder="Enter password…" onkeydown="if(event.key==='Enter')checkPw()">
+      <button class="pw-eye" onclick="togglePwVis()" id="pw-eye-btn">👁</button>
+    </div>
+    <div class="pw-error" id="pw-error">❌ Incorrect password. Please try again.</div>
+    <button class="pw-btn" onclick="checkPw()">Unlock Dashboard →</button>
+    <div class="pw-foot">2026 VAT Schedule · Finance Team · Confidential</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="pw-app">
+
+<!-- HEADER -->
+<div class="header">
+  <div class="hbrand">
+    <div class="hicon">📋</div>
+    <div>
+      <h1>2026 VAT Filing Dashboard</h1>
+      <p>Finance Team · Annual VAT Schedule &amp; Deadline Tracker</p>
+    </div>
+  </div>
+  <div class="hstats">
+    <div class="hstat"><div class="n" id="hdr-co-count">12</div><div class="l">Companies</div></div>
+    <div class="hstat"><div class="n">12</div><div class="l">Due Dates</div></div>
+    <div class="hstat"><div class="n" id="hdr-next-days">—</div><div class="l">Days to Next</div></div>
+  </div>
+</div>
+
+<!-- LEGEND -->
+<div class="legend">
+  <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Legend</span>
+  <div class="leg-item"><div class="leg-box f"></div>Regular day</div>
+  <div class="leg-item"><div class="leg-box d"></div>VAT Due Date</div>
+  <div class="leg-item"><div class="leg-box w"></div>Weekend</div>
+  <div class="leg-item"><div style="width:14px;height:14px;border-radius:3px;background:var(--purple);flex-shrink:0;"></div>New Company</div>
+  <div class="leg-item" style="margin-left:auto;font-size:11px;color:var(--muted);">🔗 Blue = TRN linked to Google Drive</div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <button class="nav-btn active" onclick="showTab('calendar',this)">📅 Calendar <span class="nb">12</span></button>
+  <button class="nav-btn" onclick="showTab('summary',this)">📊 Summary</button>
+  <button class="nav-btn" onclick="showTab('companies',this)">🏢 Companies <span class="nb" id="nav-co-nb">12</span></button>
+  <button class="nav-btn" onclick="showTab('reminders',this)">🔔 Reminders</button>
+  <button class="nav-btn" onclick="showVendorTab(this)">🏛 Vendors <span class="nb" id="nav-vendor-nb">—</span></button>
+  <button class="nav-btn" onclick="showTab('addco',this)" style="color:var(--purple);">➕ Add Company <span class="nb" id="nav-new-nb" style="background:#EDE9FE;color:var(--purple);">0</span></button>
+</div>
+
+<div class="main">
+
+<!-- TAB: CALENDAR -->
+<div id="tab-calendar" class="tab-panel active">
+  <div class="filter-bar">
+    <span class="filter-label">Quarter:</span>
+    <button class="fbtn active" onclick="filterQ('all',this)">All</button>
+    <button class="fbtn" onclick="filterQ('q1',this)">Q1 Jan–Mar</button>
+    <button class="fbtn" onclick="filterQ('q2',this)">Q2 Apr–Jun</button>
+    <button class="fbtn" onclick="filterQ('q3',this)">Q3 Jul–Sep</button>
+    <button class="fbtn" onclick="filterQ('q4',this)">Q4 Oct–Dec</button>
+  </div>
+  <div id="q1" class="q-section"><div class="q-label">Q1 · January — March 2026</div><div class="months-grid" id="q1-grid"></div></div>
+  <div id="q2" class="q-section"><div class="q-label">Q2 · April — June 2026</div><div class="months-grid" id="q2-grid"></div></div>
+  <div id="q3" class="q-section"><div class="q-label">Q3 · July — September 2026</div><div class="months-grid" id="q3-grid"></div></div>
+  <div id="q4" class="q-section"><div class="q-label">Q4 · October — December 2026</div><div class="months-grid" id="q4-grid"></div></div>
+</div>
+
+<!-- TAB: SUMMARY -->
+<div id="tab-summary" class="tab-panel">
+  <div class="table-wrap"><table>
+    <thead><tr><th>#</th><th>Month</th><th>Due Date</th><th>Companies</th><th>Tax Period</th><th style="text-align:center">Count</th></tr></thead>
+    <tbody id="sum-tbody"></tbody>
+  </table></div>
+</div>
+
+<!-- TAB: COMPANIES -->
+<div id="tab-companies" class="tab-panel">
+  <div class="companies-grid" id="co-grid"></div>
+</div>
+
+<!-- TAB: REMINDERS -->
+<div id="tab-reminders" class="tab-panel">
+  <div class="next-deadline-banner">
+    <div class="ndb-inner">
+      <div class="ndb-left">
+        <div class="eyebrow">⏰ Next VAT Filing Deadline</div>
+        <div class="deadline-title" id="nd-title">—</div>
+        <div class="deadline-sub" id="nd-sub">Loading…</div>
+      </div>
+      <div class="ndb-countdown">
+        <div class="days-num" id="nd-days">—</div>
+        <div class="days-lbl">Days Away</div>
+      </div>
+    </div>
+    <div class="ndb-companies"><span>Filing:</span><div id="nd-companies"></div></div>
+  </div>
+  <div class="rem-layout">
+    <div>
+      <div class="deadlines-list">
+        <div class="dl-head">📆 All 2026 Filing Deadlines <span class="dl-head-right">Today: <span id="today-display"></span></span></div>
+        <div id="dl-timeline"></div>
+      </div>
+    </div>
+    <div class="rem-panel">
+      <div class="panel-card">
+        <div class="panel-head navy">⚡ Upcoming Alerts</div>
+        <div class="panel-body"><div class="alerts-strip" id="alerts-strip"></div></div>
+      </div>
+      <div class="panel-card">
+        <div class="panel-head teal">🔔 Browser Notifications</div>
+        <div class="panel-body">
+          <div class="input-group" style="margin-bottom:10px;">
+            <label>Remind me when deadline is</label>
+            <select id="notif-days-before"><option value="30">30 days before</option><option value="14">14 days before</option><option value="7" selected>7 days before</option><option value="3">3 days before</option><option value="1">1 day before</option></select>
+          </div>
+          <button class="notif-btn" onclick="enableNotifications()">🔔 Enable Browser Notifications</button>
+          <div class="notif-status" id="notif-status"></div>
+          <p style="font-size:11px;color:var(--muted);margin-top:10px;line-height:1.6;">Appears as a desktop pop-up when this page is open. For persistent daily reminders, use the email template below.</p>
+        </div>
+      </div>
+      <div class="panel-card">
+        <div class="panel-head blue">✉️ Email Reminder Template</div>
+        <div class="panel-body">
+          <div class="input-group"><label>Deadline</label><select id="email-deadline-sel" onchange="generateEmail()"></select></div>
+          <div class="input-group"><label>Days before</label>
+            <select id="email-days-sel" onchange="generateEmail()"><option value="30">30 days before</option><option value="14">14 days before</option><option value="7" selected>7 days before</option><option value="3">3 days before</option><option value="1">1 day before (final)</option></select>
+          </div>
+          <button class="gen-btn" onclick="generateEmail()">⚡ Generate Email</button>
+          <div class="input-group"><label>Subject</label><input type="text" id="email-subject" readonly></div>
+          <div class="input-group"><label>Body</label><textarea id="email-body" rows="7" readonly></textarea></div>
+          <button class="copy-btn" onclick="copyEmail()">📋 Copy to Clipboard</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB: ADD COMPANY -->
+<div id="tab-addco" class="tab-panel">
+  <div class="add-co-layout">
+
+    <!-- LEFT: FORM -->
+    <div class="form-card">
+      <div class="form-card-head">
+        <div class="fch-icon">🏢</div>
+        <div>
+          <div class="fch-title">Register New Company for UAE VAT</div>
+          <div class="fch-sub">New companies will appear across Calendar, Summary &amp; Companies tabs</div>
+        </div>
+      </div>
+      <div class="form-card-body">
+
+        <div class="form-row">
+          <div class="field">
+            <label>Company Initials / Code *</label>
+            <input type="text" id="f-init" placeholder="e.g. ABC" maxlength="8" oninput="this.value=this.value.toUpperCase();updatePreview()">
+            <span class="field-hint">Short code used in calendar tags</span>
+            <span class="field-err" id="err-init">Required</span>
+          </div>
+          <div class="field">
+            <label>Project Code</label>
+            <input type="text" id="f-proj" placeholder="e.g. P13_NEWGROUP" oninput="updatePreview()">
+          </div>
+        </div>
+
+        <div class="form-row full">
+          <div class="field">
+            <label>Full Company Name *</label>
+            <input type="text" id="f-name" placeholder="e.g. ALPHA BETA TRADING LLC" oninput="updatePreview()">
+            <span class="field-err" id="err-name">Required</span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="field">
+            <label>Default Email</label>
+            <input type="email" id="f-email" placeholder="accounting@company.com">
+          </div>
+          <div class="field">
+            <label>VAT TRN Number</label>
+            <input type="text" id="f-trn" placeholder="e.g. 104123456700003" maxlength="15">
+            <span class="field-hint">15-digit UAE TRN</span>
+          </div>
+        </div>
+
+        <div class="form-row full">
+          <div class="field">
+            <label>TRN Google Drive Link</label>
+            <input type="url" id="f-link" placeholder="https://drive.google.com/file/d/…">
+            <span class="field-hint">Paste the Drive link to TRN certificate (optional)</span>
+          </div>
+        </div>
+
+        <div class="form-row full" style="margin-bottom:6px;">
+          <div class="field">
+            <label>UAE VAT Filing Cycle *</label>
+            <div class="cycle-grid" id="cycle-grid">
+              <div class="cycle-opt selected" data-cycle="quarterly" onclick="selectCycle(this)">
+                <div class="co-icon">📅</div>
+                <div class="co-name">Quarterly</div>
+                <div class="co-desc">File every 3 months (most common)</div>
+              </div>
+              <div class="cycle-opt" data-cycle="monthly" onclick="selectCycle(this)">
+                <div class="co-icon">📆</div>
+                <div class="co-name">Monthly</div>
+                <div class="co-desc">File every month</div>
+              </div>
+              <div class="cycle-opt" data-cycle="custom" onclick="selectCycle(this)">
+                <div class="co-icon">⚙️</div>
+                <div class="co-name">Custom</div>
+                <div class="co-desc">Pick specific months manually</div>
+              </div>
+            </div>
+            <span class="field-err" id="err-cycle">Select a cycle</span>
+          </div>
+        </div>
+
+        <!-- Quarterly start month -->
+        <div id="quarterly-opts" class="form-row full" style="margin-bottom:6px;">
+          <div class="field">
+            <label>First Filing Month (Quarterly)</label>
+            <select id="f-q-start" onchange="updatePreview()">
+              <option value="Jan">January (then Apr, Jul, Oct)</option>
+              <option value="Feb">February (then May, Aug, Nov)</option>
+              <option value="Mar">March (then Jun, Sep, Dec)</option>
+            </select>
+            <span class="field-hint">Which month is the first quarterly filing due?</span>
+          </div>
+        </div>
+
+        <!-- Custom month picker -->
+        <div id="custom-opts" class="form-row full" style="margin-bottom:6px;display:none;">
+          <div class="field">
+            <label>Select Filing Months</label>
+            <div class="month-checks" id="month-checks">
+              <!-- built by JS -->
+            </div>
+            <span class="field-err" id="err-months">Select at least one month</span>
+          </div>
+        </div>
+
+        <!-- VAT period offset -->
+        <div class="form-row full">
+          <div class="field">
+            <label>Tax Period End Offset</label>
+            <select id="f-offset" onchange="updatePreview()">
+              <option value="3">Standard: Period ends 3 months before filing month</option>
+              <option value="2">Period ends 2 months before filing month</option>
+              <option value="1">Period ends 1 month before filing month</option>
+            </select>
+            <span class="field-hint">e.g. Jan filing → Oct–Dec period (3 months prior)</span>
+          </div>
+        </div>
+
+        <!-- PREVIEW -->
+        <div class="preview-box" id="preview-box">
+          <div class="preview-title">📋 Filing Schedule Preview</div>
+          <div class="preview-months" id="preview-months"></div>
+        </div>
+
+        <div style="margin-top:18px;">
+          <button class="submit-btn" onclick="addCompany()">
+            <span>➕</span> Add Company to Dashboard
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- RIGHT: NEW COMPANIES LIST -->
+    <div>
+      <div class="new-co-list">
+        <div class="ncl-head">
+          🆕 Newly Added Companies
+          <span class="ncl-count" id="ncl-count">0</span>
+        </div>
+        <div id="ncl-body">
+          <div class="ncl-empty">
+            <div class="e-icon">🏗️</div>
+            <p>No new companies added yet.<br>Fill the form to register a new<br>UAE VAT-registered company.</p>
+          </div>
+        </div>
+      </div>
+      <p style="font-size:11px;color:var(--muted);margin-top:10px;line-height:1.6;padding:0 4px;">
+        💡 <strong>Note:</strong> Added companies are saved for this browser session. To make them permanent, note the details and add them to the source file, or export using the copy buttons on each card.
+      </p>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- TAB: VENDOR REGISTRY -->
+<div id="tab-vendor" class="tab-panel">
+
+<!-- FTA Banner -->
+<div style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #bfdbfe;border-radius:10px;padding:12px 20px;margin:16px 36px 0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+  <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:#1e40af;">
+    <span style="font-size:18px;">🏛️</span>
+    <span><strong>TRN Verification:</strong> Use the official UAE Federal Tax Authority portal to verify any Tax Registration Number.</span>
+  </div>
+  <a href="https://tax.gov.ae/en/" target="_blank" style="background:#1e40af;color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;">🔍 Verify TRN on FTA Portal ↗</a>
+</div>
+
+<div id="vnd-loadingOverlay" class="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text">Connecting to Google Sheets...</div>
+</div>
+
+<div id="vnd-toast" class="toast" style="display:none"></div>
+
+<div class="header">
+  <div class="header-top">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="logo">🏛</div>
+      <div><h1>Vendor &amp; TRN Registry</h1><div class="subtitle">Finance Team · Live Google Sheets Database</div></div>
+    </div>
+    <div class="header-btns">
+      <div class="sync-status"><div class="sync-dot" id="syncDot"></div><span id="syncText">Live</span></div>
+      <button class="btn-export" onclick="VND.exportCSV()">⬇ Export CSV</button>
+      <button class="btn-export" onclick="VND.toggleSettings()" id="settingsBtn">⚙ Settings</button>
+      <button class="btn-primary" onclick="VND.openAdd()">+ Add Vendor</button>
+    </div>
+  </div>
+  <div class="stats" id="vnd-stats"></div>
+</div>
+
+<!-- SETTINGS PANEL -->
+<div id="vnd-settings-panel" style="display:none;background:#1e3a8a;border-top:1px solid rgba(255,255,255,.15);padding:16px 40px;">
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+    <span style="color:#93c5fd;font-size:12px;font-weight:700;white-space:nowrap;">⚙ GOOGLE SHEETS URL</span>
+    <input id="vnd-script-url-input" type="text" placeholder="Paste your Apps Script deployment URL here…"
+      style="flex:1;min-width:300px;padding:9px 14px;border-radius:8px;border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);color:#fff;font-size:12px;outline:none;font-family:Georgia,serif;"
+      oninput="this.style.borderColor=this.value.includes('script.google.com')?'#86efac':'rgba(255,255,255,.3)'"
+    />
+    <button onclick="VND.saveScriptUrl()" style="padding:9px 18px;background:#fff;color:#1e40af;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">✓ Save & Connect</button>
+    <button onclick="VND.testConnection()" style="padding:9px 14px;background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:8px;font-size:12px;cursor:pointer;white-space:nowrap;">🔗 Test</button>
+    <button onclick="VND.toggleSettings()" style="padding:9px 12px;background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:8px;font-size:12px;cursor:pointer;">✕</button>
+  </div>
+  <div id="vnd-url-status" style="margin-top:6px;font-size:11px;color:#93c5fd;"></div>
+</div>
+
+<div class="main">
+  <div class="filters">
+    <div style="display:flex;gap:6px;flex:1;">
+      <input type="text" id="searchInput" placeholder="Search vendor name or TRN..." autocomplete="off" style="flex:1;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;outline:none;"/>
+      <button onclick="VND.renderTable()" style="padding:9px 14px;background:#1e40af;color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:600;white-space:nowrap;">🔍 Search</button>
+    </div>
+    <select id="filterCat">
+      <option>All Categories</option>
+      <option>Banking</option>
+<option>Consulting</option>
+<option>Govt & PRO Services</option>
+<option>Healthcare</option>
+<option>Hospitality</option>
+<option>IT & Technology</option>
+<option>Insurance</option>
+<option>Legal</option>
+<option>Logistics</option>
+<option>Maintenance & FM</option>
+<option>Other</option>
+<option>Real Estate</option>
+<option>Security</option>
+<option>Telecom</option>
+<option>Trading & Supplies</option>
+<option>Travel & Events</option>
+<option>Utilities</option>
+    </select>
+    <select id="filterStatus">
+      <option>All Statuses</option><option>Active</option><option>Inactive</option><option>Under Review</option>
+    </select>
+    <span class="record-count" id="recordCount">Loading...</span>
+  </div>
+  <div class="table-wrap">
+    <div class="table-scroll">
+      <table>
+        <thead><tr>
+          <th onclick="VND.sortBy('name')">Vendor Name <span id="s-name"></span></th>
+          <th onclick="VND.sortBy('trn')">TRN <span id="s-trn"></span></th>
+          <th onclick="VND.sortBy('category')">Category <span id="s-category"></span></th>
+          <th onclick="VND.sortBy('country')">Country <span id="s-country"></span></th>
+          <th onclick="VND.sortBy('status')">Status <span id="s-status"></span></th>
+          <th>Description</th>
+          <th>Actions</th>
+        </tr></thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+  <div id="detailPanel" style="display:none"></div>
+</div>
+
+<div id="vnd-modalOverlay" class="modal-overlay" style="display:none" onclick="VND.overlayClose(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Add Vendor</div>
+      <button class="btn-close" onclick="VND.closeModal()">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label>Vendor Name *</label><input id="vnd-f-name" placeholder="Company name"/></div>
+      <div class="form-group"><label>TRN (15 digits) *</label><input id="vnd-f-trn" placeholder="100000000000000" maxlength="15"/></div>
+      <div class="form-group"><label>Country</label><input id="vnd-f-country" placeholder="UAE"/></div>
+      <div class="form-group">
+        <label>Category</label>
+        <select id="vnd-f-category"><option>Banking</option>
+<option>Consulting</option>
+<option>Govt & PRO Services</option>
+<option>Healthcare</option>
+<option>Hospitality</option>
+<option>IT & Technology</option>
+<option>Insurance</option>
+<option>Legal</option>
+<option>Logistics</option>
+<option>Maintenance & FM</option>
+<option>Other</option>
+<option>Real Estate</option>
+<option>Security</option>
+<option>Telecom</option>
+<option>Trading & Supplies</option>
+<option>Travel & Events</option>
+<option>Utilities</option><option>Other</option></select>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="vnd-f-status"><option>Active</option><option>Inactive</option><option>Under Review</option></select>
+      </div>
+      <div class="form-group"><label>Description / Services</label><textarea id="vnd-f-desc" placeholder="What does this vendor supply?"></textarea></div>
+    </div>
+    <div class="modal-actions" style="display:flex;gap:10px;margin-top:20px;">
+      <button class="btn-submit" id="submitBtn" onclick="VND.submitForm()">Save Vendor</button>
+      <button class="btn-secondary" onclick="VND.closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+</div>
+</div><!-- /main -->
+</div><!-- /pw-app -->
+
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal-box">
+    <div class="modal-title" id="modal-title">Remove Company?</div>
+    <div class="modal-sub" id="modal-sub">This will remove the company from all tabs. This action cannot be undone.</div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+      <button class="modal-confirm" id="modal-confirm">Remove</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════════════════
+// PASSWORD
+// ════════════════════════════════════════════════════════
+(function(){
+  if(sessionStorage.getItem('vat_auth')==='1'){
+    document.getElementById('pw-gate').style.display='none';
+    document.getElementById('pw-app').style.display='block';
+  }
+})();
+function checkPw(){
+  if(document.getElementById('pw-input').value==='nexgen26'){
+    sessionStorage.setItem('vat_auth','1');
+    const g=document.getElementById('pw-gate');
+    g.style.transition='opacity .4s'; g.style.opacity='0';
+    setTimeout(()=>{ g.style.display='none'; document.getElementById('pw-app').style.display='block'; },400);
+  } else {
+    const e=document.getElementById('pw-error');
+    e.classList.add('show'); document.getElementById('pw-input').value='';
+    document.getElementById('pw-input').focus();
+    setTimeout(()=>e.classList.remove('show'),3000);
+  }
+}
+function togglePwVis(){
+  const i=document.getElementById('pw-input'),b=document.getElementById('pw-eye-btn');
+  i.type=i.type==='password'?'text':'password'; b.textContent=i.type==='password'?'👁':'🙈';
+}
+
+// ════════════════════════════════════════════════════════
+// CORE DATA
+// ════════════════════════════════════════════════════════
+const BASE_COMPANIES = [
+  {init:'HOR',   name:'HORYS GLOBAL ELECTRONICS TRADING LLC',            proj:'P2_HOMNIFI',       email:'accounting@horystech.com',                  trn:'104126126200003', link:'https://drive.google.com/file/d/1eo5l0e2i55-srenzhkG01bvVEL0fF6ro/view?usp=sharing', isNew:false},
+  {init:'IMP',   name:'IMPACTWORKS MARKETING AND MANAGEMENT',             proj:'P12_CLIENTS',      email:'impactworksmanagement@gmail.com',            trn:'104639985100003', link:'https://drive.google.com/file/d/1cQGvxvugTZ4pHezsIHJBO1eYVKDdFuSe/view?usp=sharing', isNew:false},
+  {init:'LMTO C',name:'LMNTO CONSULTANCY TECHNICAL LLC',                  proj:'P7_MAIN COMPANY',  email:'finance@lmnto.tech',                        trn:'104752644500003', link:'https://drive.google.com/file/d/1v2mSCamj-9huOmFeoeJGf3YBrwW_rFku/view?usp=sharing', isNew:false},
+  {init:'LPIT',  name:'LMNTO PERFORMANCE INFORMATION TECHNOLOGY LLC',     proj:'P7_MAIN COMPANY',  email:'finance@lmn.to',                            trn:'104529425100003', link:'https://drive.google.com/file/d/124hhidKavkvW4olvLnbN7ehpUXCZouy6/view?usp=sharing', isNew:false},
+  {init:'CBA',   name:'CBA TECHNOLOGY SOLUTION LLC',                      proj:'P7_MAIN COMPANY',  email:'accounting@cbatech.net',                    trn:'104138423900003', link:'https://drive.google.com/file/d/1irw0NcK2HoG2psuYIcigi3VKlyP7v6UX/view?usp=sharing', isNew:false},
+  {init:'C&B',   name:'CREED AND BEAR NETWORK LLC',                       proj:'P8_CREED AND BEAR',email:'accounting@creedandbear.com',               trn:'104215207200003', link:'https://drive.google.com/file/d/1wmPRcmFEYsudF3oeRb5Aqsc6USzk0mhI/view?usp=sharing', isNew:false},
+  {init:'ARI',   name:'ARI MARKETING MANAGEMENT LLC',                     proj:'P4_AGROUP',        email:'finance@arimarketing.pro',                  trn:'104376907200003', link:'https://drive.google.com/file/d/1Z-U5fTTV5JOtCN7T75WA66Ou3v4e-_Rw/view?usp=sharing', isNew:false},
+  {init:'SKI',   name:'SKILL MASTERY CUSTOMER CARE CENTER LLC',           proj:'P11_HGROUP',       email:'accounting@skillmastery.pro',                trn:'104630780500003', link:'https://drive.google.com/file/d/1q-JzqcHtYpsAOMQCJ4ay8lerjiKzO5_w/view?usp=sharing', isNew:false},
+  {init:'A21',   name:'ARIOS 21 HR CONSULTANCIES LLC',                    proj:'P4_AGROUP',        email:'accounting@arios21.com',                    trn:'104748107000003', link:'https://drive.google.com/file/d/1AWB8oSw8hJFQXaAxA7bJTsB5bVjhxook/view?usp=sharing', isNew:false},
+  {init:'VAI',   name:'VAI MARKETING MANAGEMENT LLC',                     proj:'P7_MAIN COMPANY',  email:'finance@vaimanage.com',                     trn:'100528734500003', link:'https://drive.google.com/file/d/1INl0AZWH5wVMKp6G4jQDsaBa2ZBCicD9/view?usp=sharing', isNew:false},
+  {init:'NEX',   name:'NEXGEN TAX AND ACCOUNTING LLC',                    proj:'P7_MAIN COMPANY',  email:'accounting@nexgentax.pro',                  trn:'104629807900003', link:'https://drive.google.com/file/d/1XPgaNKHqPSEdCuUtKkJOtD2ANcLVbg3e/view?usp=sharing', isNew:false},
+  {init:'WW',    name:'WEALTHWAVE CAPITAL INVESTMENT IN COMMERCIAL ENTERPRISES & MANAGEMENT LLC', proj:'P6_AV GROUP', email:'accounting@wealthwavecapitalinvestment.com', trn:'104697607000003', link:'https://drive.google.com/file/d/1PvcN81rJWICoc-SxbZWxRVU_m1V7KWvn/view?usp=sharing', isNew:false},
+];
+
+const ALL_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTH_FULL = {Jan:'January',Feb:'February',Mar:'March',Apr:'April',May:'May',Jun:'June',Jul:'July',Aug:'August',Sep:'September',Oct:'October',Nov:'November',Dec:'December'};
+
+const BASE_MONTHS_DATA = [
+  {name:'January 2026',  days:31,start:3,due:28, dueL:'Jan 28', dueDate:new Date(2026,0,28),  period:'01 Oct – 31 Dec 2025',      q:'q1'},
+  {name:'February 2026', days:28,start:6,due:null,dueL:'Mar 2', dueDate:new Date(2026,2,2),   period:'01 Nov 2025 – 31 Jan 2026', q:'q1'},
+  {name:'March 2026',    days:31,start:6,due:30, dueL:'Mar 30', dueDate:new Date(2026,2,30),  period:'01 Dec 2025 – 28 Feb 2026', q:'q1'},
+  {name:'April 2026',    days:30,start:2,due:28, dueL:'Apr 28', dueDate:new Date(2026,3,28),  period:'01 Jan – 31 Mar 2026',      q:'q2'},
+  {name:'May 2026',      days:31,start:4,due:28, dueL:'May 28', dueDate:new Date(2026,4,28),  period:'01 Feb – 30 Apr 2026',      q:'q2'},
+  {name:'June 2026',     days:30,start:0,due:29, dueL:'Jun 29', dueDate:new Date(2026,5,29),  period:'01 Mar – 31 May 2026',      q:'q2'},
+  {name:'July 2026',     days:31,start:2,due:28, dueL:'Jul 28', dueDate:new Date(2026,6,28),  period:'01 Apr – 30 Jun 2026',      q:'q3'},
+  {name:'August 2026',   days:31,start:5,due:28, dueL:'Aug 28', dueDate:new Date(2026,7,28),  period:'01 May – 31 Jul 2026',      q:'q3'},
+  {name:'September 2026',days:30,start:1,due:28, dueL:'Sep 28', dueDate:new Date(2026,8,28),  period:'01 Jun – 31 Aug 2026',      q:'q3'},
+  {name:'October 2026',  days:31,start:3,due:28, dueL:'Oct 28', dueDate:new Date(2026,9,28),  period:'01 Jul – 30 Sep 2026',      q:'q4'},
+  {name:'November 2026', days:30,start:6,due:30, dueL:'Nov 30', dueDate:new Date(2026,10,30), period:'01 Aug – 31 Oct 2026',      q:'q4'},
+  {name:'December 2026', days:31,start:1,due:28, dueL:'Dec 28', dueDate:new Date(2026,11,28), period:'01 Sep – 30 Nov 2026',      q:'q4'},
+];
+
+const BASE_CO_MONTHS = {
+  HOR:['Jan','Apr','Jul','Oct'], IMP:['Jan','Apr','Jul','Oct'],
+  'LMTO C':['Jan','Apr','Jul','Oct'], LPIT:['Apr','Jul','Oct'],
+  CBA:['Feb','May','Aug','Nov'], 'C&B':['Feb','May','Aug','Nov'],
+  ARI:['Feb','May','Aug','Nov'], SKI:['Feb','May','Aug','Nov'], A21:['Feb','May','Aug','Nov'],
+  VAI:['Mar','Jun','Sep','Dec'], NEX:['Mar','Jun','Sep','Dec'], WW:['Mar','Jun','Sep','Dec'],
+};
+
+const DUE_BY = {Jan:'28 Jan',Feb:'2 Mar',Mar:'30 Mar',Apr:'28 Apr',May:'28 May',Jun:'29 Jun',Jul:'28 Jul',Aug:'28 Aug',Sep:'28 Sep',Oct:'28 Oct',Nov:'30 Nov',Dec:'28 Dec'};
+const PER_BY = {Jan:'Oct–Dec 2025',Feb:'Nov25–Jan26',Mar:'Dec25–Feb26',Apr:'Jan–Mar 26',May:'Feb–Apr 26',Jun:'Mar–May 26',Jul:'Apr–Jun 26',Aug:'May–Jul 26',Sep:'Jun–Aug 26',Oct:'Jul–Sep 26',Nov:'Aug–Oct 26',Dec:'Sep–Nov 26'};
+
+// Runtime state — mutated when new companies added
+let COMPANIES = [...BASE_COMPANIES];
+let CO_MONTHS = (function(){const inv={};Object.entries(BASE_CO_MONTHS).forEach(([co,months])=>{months.forEach(m=>{if(!inv[m])inv[m]=[];inv[m].push(co);});});return inv;})();
+let NEW_COMPANIES = []; // track newly added separately
+
+// ════════════════════════════════════════════════════════
+// CALENDAR BUILD
+// ════════════════════════════════════════════════════════
+function buildMonthCard(m) {
+  let cells='';
+  for(let i=0;i<m.start;i++) cells+='<div class="dc empty"></div>';
+  for(let d=1;d<=m.days;d++){
+    const pos=(m.start+d-1)%7,wk=pos===5||pos===6,isDue=d===m.due;
+    cells+=`<div class="dc${isDue?' due':wk?' wknd':''}">${d}</div>`;
+  }
+  const coRows = (CO_MONTHS[m.shortMonth]||[]).map(c=>{
+    const co=COMPANIES.find(x=>x.init===c);
+    const isNew=co&&co.isNew;
+    if(co&&co.link&&!isNew) return `<div class="co-row"><a class="co-tag linked" href="${co.link}" target="_blank">${c} 🔗</a><span class="co-period">${m.period}</span></div>`;
+    return `<div class="co-row"><span class="co-tag${isNew?' new-co':''}">${c}${isNew?' ✦':''}</span><span class="co-period">${m.period}</span></div>`;
+  }).join('');
+  return `<div class="month-card">
+    <div class="month-hdr"><span class="month-name">${m.name}</span><span class="due-chip">Due ${m.dueL}</span></div>
+    <div class="cal-wrap"><div class="day-hdrs">${['M','T','W','T','F','S','S'].map(d=>`<div class="dh">${d}</div>`).join('')}</div><div class="days-grid">${cells}</div></div>
+    <div class="co-section"><div class="co-lbl">Companies Filing</div>${coRows}</div>
+  </div>`;
+}
+
+function rebuildCalendars(){
+  ['q1','q2','q3','q4'].forEach(q=>{
+    const el=document.getElementById(q+'-grid'); el.innerHTML='';
+    BASE_MONTHS_DATA.filter(m=>m.q===q).forEach(m=>{
+      const mShort=m.shortMonth||m.dueL.split(' ')[0]||m.name.substring(0,3);
+      el.innerHTML+=buildMonthCard({...m, shortMonth:mShort, cos:CO_MONTHS[mShort]||[]});
+    });
+  });
+}
+
+// Map month names to short codes for CO_MONTHS lookup
+const MONTH_SHORT_MAP = {
+  'January 2026':'Jan','February 2026':'Feb','March 2026':'Mar','April 2026':'Apr',
+  'May 2026':'May','June 2026':'Jun','July 2026':'Jul','August 2026':'Aug',
+  'September 2026':'Sep','October 2026':'Oct','November 2026':'Nov','December 2026':'Dec'
+};
+// Attach shortMonth to base data
+BASE_MONTHS_DATA.forEach(m=>{ m.shortMonth = MONTH_SHORT_MAP[m.name]; });
+rebuildCalendars();
+
+// ════════════════════════════════════════════════════════
+// SUMMARY TABLE
+// ════════════════════════════════════════════════════════
+function rebuildSummary(){
+  const tbody=document.getElementById('sum-tbody'); tbody.innerHTML='';
+  BASE_MONTHS_DATA.forEach((m,i)=>{
+    const cos=CO_MONTHS[m.shortMonth]||[];
+    const tags=cos.map(c=>{
+      const co=COMPANIES.find(x=>x.init===c);
+      return `<span class="sm-tag${co&&co.isNew?' new-co':''}">${c}</span>`;
+    }).join('');
+    tbody.innerHTML+=`<tr>
+      <td style="font-family:'DM Mono',monospace;color:var(--muted);font-size:12px;">${String(i+1).padStart(2,'0')}</td>
+      <td class="td-month">${m.name}</td><td class="td-due">${m.dueL}</td>
+      <td><div class="td-tags">${tags}</div></td>
+      <td class="td-period">${m.period}</td>
+      <td class="td-count">${cos.length}</td>
+    </tr>`;
+  });
+}
+rebuildSummary();
+
+// ════════════════════════════════════════════════════════
+// COMPANIES GRID
+// ════════════════════════════════════════════════════════
+function rebuildCompanies(){
+  const grid=document.getElementById('co-grid'); grid.innerHTML='';
+  COMPANIES.forEach(co=>{
+    const filings=Object.entries(CO_MONTHS).filter(([m,cos])=>cos.includes(co.init)).map(([m])=>m);
+    const chips=filings.map(fm=>`<div class="f-chip${co.isNew?' new-co':''}"><div class="fm">${fm}</div><div class="fd">${DUE_BY[fm]||'—'}</div></div>`).join('');
+    const trnEl=co.link?`<a href="${co.link}" target="_blank">📄 ${co.trn} ↗ View on Drive</a>`:`<span>${co.trn||'N/A'}</span>`;
+    const emailHtml=(co.email||'—').split('\n').map(e=>`<a href="mailto:${e.trim()}">${e.trim()}</a>`).join('<br>');
+    const delBtn=co.isNew?`<button class="delete-co-btn" onclick="confirmDelete('${co.init}')">✕ Remove</button>`:'';
+    grid.innerHTML+=`<div class="company-card${co.isNew?' new-co':''}">
+      <div class="cc-header${co.isNew?' new-co':''}">
+        <div>
+          <div class="cc-initials" style="display:flex;align-items:center;gap:8px;">${co.init}${co.isNew?'<span class="new-badge">NEW</span>':''}</div>
+          <div class="cc-name">${co.name}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;"><span class="cc-project">${co.proj||'—'}</span>${delBtn}</div>
+      </div>
+      <div class="cc-body">
+        <div class="cc-row"><div class="cc-icon">📧</div><div><div class="cc-lbl">Default Email</div><div class="cc-val">${emailHtml}</div></div></div>
+        <div class="cc-row"><div class="cc-icon">🔢</div><div><div class="cc-lbl">VAT TRN</div><div class="cc-val">${trnEl}</div></div></div>
+        <div class="cc-filings"><div class="cc-filings-lbl">2026 Filing Schedule</div><div class="filing-chips">${chips||'<span style="font-size:12px;color:var(--muted)">No months assigned yet</span>'}</div></div>
+      </div>
+    </div>`;
+  });
+}
+rebuildCompanies();
+
+// ════════════════════════════════════════════════════════
+// REMINDERS
+// ════════════════════════════════════════════════════════
+const today=new Date(); today.setHours(0,0,0,0);
+function daysUntil(d){return Math.ceil((d-today)/86400000);}
+function statusInfo(days){
+  if(days<0)  return{cls:'past',   label:'Completed', pill:'past'};
+  if(days===0)return{cls:'today',  label:'DUE TODAY!',pill:'urgent'};
+  if(days<=7) return{cls:'today',  label:`${days}d — URGENT`,pill:'urgent'};
+  if(days<=30)return{cls:'current',label:`${days}d — Soon`,  pill:'soon'};
+  return       {cls:'upcoming',    label:`${days} days`,      pill:'ok'};
+}
+
+function buildReminders(){
+  const nextD=BASE_MONTHS_DATA.map(m=>({...m,days:daysUntil(m.dueDate)})).filter(m=>m.days>=0).sort((a,b)=>a.days-b.days)[0];
+  if(nextD){
+    const el=document.getElementById('hdr-next-days');
+    el.textContent=nextD.days; el.style.color=nextD.days<=7?'#F04E37':nextD.days<=30?'#E8A020':'#5DD88A';
+    document.getElementById('nd-title').textContent=`${nextD.name} Filing — Due ${nextD.dueL}`;
+    document.getElementById('nd-sub').textContent=`Tax period: ${nextD.period}`;
+    const dn=document.getElementById('nd-days'); dn.textContent=nextD.days===0?'TODAY!':nextD.days;
+    dn.className='days-num '+(nextD.days<=7?'urgent':nextD.days<=30?'soon':'ok');
+    const cos=CO_MONTHS[nextD.shortMonth]||[];
+    document.getElementById('nd-companies').innerHTML=cos.map(c=>`<span style="background:rgba(255,255,255,.15);color:white;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;font-family:'DM Mono',monospace;">${c}</span>`).join(' ');
+  }
+  document.getElementById('today-display').textContent=today.toLocaleDateString('en-GB',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+  // Timeline
+  const tl=document.getElementById('dl-timeline'); tl.innerHTML='';
+  BASE_MONTHS_DATA.forEach(m=>{
+    const days=daysUntil(m.dueDate),si=statusInfo(days);
+    const cos=CO_MONTHS[m.shortMonth]||[];
+    const tags=cos.map(c=>{const co=COMPANIES.find(x=>x.init===c);return`<span class="dl-cotag${co&&co.isNew?' new-co':''}">${c}</span>`;}).join('');
+    const dText=days<0?`${Math.abs(days)}d ago`:days===0?'TODAY':`${days} days`;
+    tl.innerHTML+=`<div class="dl-item ${si.cls}">
+      <div class="dl-month-badge ${si.cls}"><div class="bm">${m.shortMonth}</div><div class="bd">${m.dueL.split(' ')[0]}</div></div>
+      <div class="dl-info"><div class="dl-title">${m.name} VAT Filing</div><div class="dl-period">Period: ${m.period}</div><div class="dl-cotags">${tags}</div></div>
+      <div class="dl-status"><span class="status-pill ${si.pill}">${si.label}</span><div class="dl-days">${dText}</div></div>
+    </div>`;
+  });
+
+  // Alerts
+  const strip=document.getElementById('alerts-strip');
+  const up=BASE_MONTHS_DATA.map(m=>({...m,days:daysUntil(m.dueDate)})).filter(m=>m.days>=0&&m.days<=60).sort((a,b)=>a.days-b.days).slice(0,4);
+  if(!up.length){strip.innerHTML='<div style="font-size:12px;color:var(--muted);padding:8px 0;">No deadlines in the next 60 days.</div>';return;}
+  strip.innerHTML=up.map(m=>{
+    const d=m.days,t=d<=7?'urgent':d<=30?'soon':'ok';
+    return `<div class="alert-item ${t}">
+      <div class="alert-icon">${d<=7?'🚨':d<=30?'⚠️':'📅'}</div>
+      <div class="alert-text"><div class="at">${m.name} — Due ${m.dueL}</div><div class="as">${(CO_MONTHS[m.shortMonth]||[]).join(', ')}</div></div>
+      <div class="alert-days ${t}">${d===0?'TODAY':d===1?'Tomorrow':d+'d'}</div>
+    </div>`;
+  }).join('');
+
+  // Email selector
+  const sel=document.getElementById('email-deadline-sel'); sel.innerHTML='';
+  BASE_MONTHS_DATA.forEach((m,i)=>{const o=document.createElement('option');o.value=i;o.textContent=`${m.name} — Due ${m.dueL}`;sel.appendChild(o);});
+  if(nextD){const idx=BASE_MONTHS_DATA.findIndex(m=>m.name===nextD.name);if(idx>=0)sel.value=idx;}
+  generateEmail();
+
+  if(typeof Notification!=='undefined'&&Notification.permission==='granted'){
+    const s=document.getElementById('notif-status');s.className='notif-status granted';s.textContent='✅ Notifications are enabled.';
+  }
+}
+buildReminders();
+
+function generateEmail(){
+  const m=BASE_MONTHS_DATA[+document.getElementById('email-deadline-sel').value];
+  const db=+document.getElementById('email-days-sel').value;
+  if(!m)return;
+  const rd=new Date(m.dueDate);rd.setDate(rd.getDate()-db);
+  const rs=rd.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  const ds=m.dueDate.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  const cos=CO_MONTHS[m.shortMonth]||[];
+  const coList=cos.map(c=>{const co=COMPANIES.find(x=>x.init===c);return co?`  • ${c} – ${co.name}`:`  • ${c}`;}).join('\n');
+  document.getElementById('email-subject').value=`[REMINDER] VAT Return Due in ${db} Day${db!==1?'s':''} — ${m.name} Filing (${m.dueL})`;
+  document.getElementById('email-body').value=`Dear Team,\n\nThis is a ${db}-day reminder that the following VAT returns are due on ${ds}.\n\nFILING DEADLINE: ${ds}\nTAX PERIOD COVERED: ${m.period}\n\nCOMPANIES FILING:\n${coList}\n\nPlease ensure all VAT returns are prepared and submitted before the deadline.\n\nACTION REQUIRED:\n  1. Confirm VAT figures are reconciled\n  2. Review and approve the VAT return\n  3. Submit via the FTA portal before ${ds}\n  4. Retain confirmation of submission\n\nGenerated on ${today.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}.\n\nRegards,\nFinance Team`;
+}
+function copyEmail(){
+  const full=`Subject: ${document.getElementById('email-subject').value}\n\n${document.getElementById('email-body').value}`;
+  navigator.clipboard.writeText(full).then(()=>showToast('✅ Email copied to clipboard!','success')).catch(()=>{document.getElementById('email-body').select();document.execCommand('copy');showToast('✅ Email copied!','success');});
+}
+function enableNotifications(){
+  if(!('Notification' in window)){showToast('⚠️ Browser does not support notifications','warn');return;}
+  Notification.requestPermission().then(p=>{
+    const s=document.getElementById('notif-status');
+    if(p==='granted'){s.className='notif-status granted';s.textContent='✅ Notifications enabled!';scheduleNotifications();showToast('🔔 Notifications enabled!','success');}
+    else{s.className='notif-status denied';s.textContent='❌ Please allow notifications in browser settings.';}
+  });
+}
+function scheduleNotifications(){
+  const db=+document.getElementById('notif-days-before').value;
+  const up=BASE_MONTHS_DATA.map(m=>({...m,days:daysUntil(m.dueDate)})).filter(m=>m.days>=0&&m.days<=db+1);
+  if(!up.length){new Notification('VAT Dashboard',{body:'No deadlines within '+db+' days.'});return;}
+  up.forEach(m=>new Notification(`VAT Deadline: ${m.dueL}`,{body:m.days===0?`🚨 DUE TODAY — ${m.shortMonth}`:`⏰ Due in ${m.days}d — ${m.name}`,tag:'vat-'+m.name}));
+}
+
+// ════════════════════════════════════════════════════════
+// ADD COMPANY FORM
+// ════════════════════════════════════════════════════════
+let selectedCycle = 'quarterly';
+
+// Build month checkboxes
+const mcheckCont = document.getElementById('month-checks');
+ALL_MONTHS.forEach(m=>{
+  const lbl=document.createElement('label');
+  lbl.className='mcheck'; lbl.dataset.month=m;
+  lbl.innerHTML=`<input type="checkbox" value="${m}" onchange="onMCheckChange(this)"> ${m}`;
+  mcheckCont.appendChild(lbl);
+});
+
+function onMCheckChange(cb){
+  const lbl=cb.closest('label');
+  lbl.classList.toggle('checked',cb.checked);
+  updatePreview();
+}
+
+function selectCycle(el){
+  document.querySelectorAll('.cycle-opt').forEach(x=>x.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedCycle=el.dataset.cycle;
+  document.getElementById('quarterly-opts').style.display=selectedCycle==='quarterly'?'':'none';
+  document.getElementById('custom-opts').style.display=selectedCycle==='custom'?'':'none';
+  updatePreview();
+}
+
+function getFilingMonths(){
+  if(selectedCycle==='quarterly'){
+    const start=document.getElementById('f-q-start').value;
+    const idx=ALL_MONTHS.indexOf(start);
+    return [0,1,2,3].map(i=>ALL_MONTHS[(idx+i*3)%12]);
+  }
+  if(selectedCycle==='monthly') return [...ALL_MONTHS];
+  if(selectedCycle==='custom'){
+    return ALL_MONTHS.filter(m=>{
+      const lbl=document.querySelector(`.mcheck[data-month="${m}"] input`);
+      return lbl&&lbl.checked;
+    });
+  }
+  return [];
+}
+
+function computePeriod(filingMonth, offsetMonths){
+  const idx=ALL_MONTHS.indexOf(filingMonth);
+  const endIdx=(idx-1+12)%12;
+  const startIdx=(endIdx-offsetMonths+1+12)%12;
+  const toShort=i=>{const d=new Date(2026,i,1);return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});};
+  const endDay=new Date(2026,endIdx+1,0).getDate();
+  return `${toShort(startIdx)} – ${endDay} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][endIdx]} 2026`;
+}
+
+function updatePreview(){
+  const months=getFilingMonths();
+  const box=document.getElementById('preview-box');
+  if(!months.length){box.classList.remove('show');return;}
+  box.classList.add('show');
+  const offset=+document.getElementById('f-offset').value;
+  document.getElementById('preview-months').innerHTML=months.map(m=>`
+    <div class="pm-chip">
+      <div class="pmm">${m}</div>
+      <div class="pmd">${DUE_BY[m]||'28 '+m}</div>
+    </div>`).join('');
+}
+updatePreview();
+
+function addCompany(){
+  // Validate
+  let ok=true;
+  const init=document.getElementById('f-init').value.trim();
+  const name=document.getElementById('f-name').value.trim();
+  const months=getFilingMonths();
+
+  const showErr=(id,msg)=>{const e=document.getElementById(id);e.textContent=msg;e.classList.add('show');document.getElementById(id.replace('err-','f-')).classList.add('error');ok=false;};
+  const clearErr=(id)=>{document.getElementById(id).classList.remove('show');};
+  clearErr('err-init');clearErr('err-name');clearErr('err-cycle');clearErr('err-months');
+  document.querySelectorAll('.field input').forEach(i=>i.classList.remove('error'));
+
+  if(!init) showErr('err-init','Company code is required');
+  else if(COMPANIES.find(c=>c.init===init)){document.getElementById('err-init').textContent='This code already exists';document.getElementById('err-init').classList.add('show');document.getElementById('f-init').classList.add('error');ok=false;}
+  if(!name) showErr('err-name','Company name is required');
+  if(selectedCycle==='custom'&&!months.length){document.getElementById('err-months').classList.add('show');ok=false;}
+  if(!ok) return;
+
+  const newCo = {
+    init,
+    name: name.toUpperCase(),
+    proj: document.getElementById('f-proj').value.trim()||'—',
+    email: document.getElementById('f-email').value.trim(),
+    trn: document.getElementById('f-trn').value.trim(),
+    link: document.getElementById('f-link').value.trim(),
+    isNew: true,
+    filingMonths: months,
+  };
+
+  // Add to state
+  COMPANIES.push(newCo);
+  months.forEach(m=>{if(!CO_MONTHS[m])CO_MONTHS[m]=[];if(!CO_MONTHS[m].includes(init))CO_MONTHS[m].push(init);});
+  NEW_COMPANIES.push(newCo);
+
+  // Rebuild all tabs
+  rebuildCalendars();
+  rebuildSummary();
+  rebuildCompanies();
+  buildReminders();
+  renderNewCoList();
+  updateCounters();
+
+  // Clear form
+  document.getElementById('f-init').value='';
+  document.getElementById('f-name').value='';
+  document.getElementById('f-proj').value='';
+  document.getElementById('f-email').value='';
+  document.getElementById('f-trn').value='';
+  document.getElementById('f-link').value='';
+  document.querySelectorAll('.mcheck input').forEach(cb=>{cb.checked=false;cb.closest('label').classList.remove('checked');});
+  document.getElementById('preview-box').classList.remove('show');
+  document.getElementById('f-q-start').value='Jan';
+  updatePreview();
+
+  showToast(`✅ ${init} added to dashboard across all tabs!`,'success');
+}
+
+function renderNewCoList(){
+  const body=document.getElementById('ncl-body');
+  if(!NEW_COMPANIES.length){
+    body.innerHTML='<div class="ncl-empty"><div class="e-icon">🏗️</div><p>No new companies added yet.<br>Fill the form to register a new<br>UAE VAT-registered company.</p></div>';
+    return;
+  }
+  body.innerHTML=NEW_COMPANIES.map(co=>{
+    const months=co.filingMonths||[];
+    const mchips=months.map(m=>`<span class="ncl-mchip">${m} · ${DUE_BY[m]||'28 '+m}</span>`).join('');
+    return `<div class="ncl-item">
+      <div class="ncl-top"><span class="ncl-init">${co.init}</span><span class="ncl-fullname">${co.name}</span></div>
+      <div class="ncl-detail">
+        <div class="ncl-d"><strong>${co.trn||'N/A'}</strong>VAT TRN</div>
+        <div class="ncl-d"><strong>${co.proj}</strong>Project</div>
+        ${co.email?`<div class="ncl-d"><strong>${co.email}</strong>Email</div>`:''}
+      </div>
+      <div class="ncl-months">${mchips}</div>
+      <div class="ncl-actions">
+        <button class="ncl-edit-btn" onclick="copyCoDetails('${co.init}')">📋 Copy Details</button>
+        <button class="ncl-del-btn" onclick="confirmDelete('${co.init}')">✕ Remove</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function copyCoDetails(init){
+  const co=COMPANIES.find(c=>c.init===init);
+  if(!co)return;
+  const txt=`Company: ${co.name}\nCode: ${co.init}\nProject: ${co.proj}\nEmail: ${co.email}\nTRN: ${co.trn}\nFiling Months: ${Object.entries(CO_MONTHS).filter(([m,cos])=>cos.includes(init)).map(([m])=>m).join(', ')}`;
+  navigator.clipboard.writeText(txt).then(()=>showToast('📋 Details copied!','success')).catch(()=>showToast('Copy failed','warn'));
+}
+
+function updateCounters(){
+  const total=COMPANIES.length;
+  document.getElementById('hdr-co-count').textContent=total;
+  document.getElementById('nav-co-nb').textContent=total;
+  document.getElementById('nav-new-nb').textContent=NEW_COMPANIES.length;
+  document.getElementById('ncl-count').textContent=NEW_COMPANIES.length;
+}
+
+// ── Delete company ──────────────────────────────────────
+let pendingDeleteInit=null;
+function confirmDelete(init){
+  pendingDeleteInit=init;
+  const co=COMPANIES.find(c=>c.init===init);
+  document.getElementById('modal-title').textContent=`Remove ${init}?`;
+  document.getElementById('modal-sub').textContent=`"${co?co.name:init}" will be removed from all tabs including calendar, summary, and companies. This cannot be undone in this session.`;
+  document.getElementById('modal-confirm').onclick=doDelete;
+  document.getElementById('modal').classList.add('open');
+}
+function doDelete(){
+  const init=pendingDeleteInit; if(!init)return;
+  COMPANIES=COMPANIES.filter(c=>c.init!==init);
+  NEW_COMPANIES=NEW_COMPANIES.filter(c=>c.init!==init);
+  Object.keys(CO_MONTHS).forEach(k=>{CO_MONTHS[k]=CO_MONTHS[k].filter(x=>x!==init);});
+  BASE_MONTHS_DATA.forEach(m=>{if(m.cos)m.cos=m.cos.filter(x=>x!==init);});
+  rebuildCalendars(); rebuildSummary(); rebuildCompanies(); buildReminders(); renderNewCoList(); updateCounters();
+  closeModal();
+  showToast(`🗑️ ${init} removed from dashboard`,'success');
+}
+function closeModal(){document.getElementById('modal').classList.remove('open');pendingDeleteInit=null;}
+document.getElementById('modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
+
+// ════════════════════════════════════════════════════════
+// NAV & FILTERS
+// ════════════════════════════════════════════════════════
+function showTab(tab,btn){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  if(btn)btn.classList.add('active');
+}
+function filterQ(q,btn){
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  ['q1','q2','q3','q4'].forEach(id=>document.getElementById(id).style.display=(q==='all'||q===id)?'':'none');
+}
+
+// ════════════════════════════════════════════════════════
+// TOAST
+// ════════════════════════════════════════════════════════
+function showToast(msg,type='success'){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className=`toast show ${type}`;
+  clearTimeout(t._t); t._t=setTimeout(()=>t.className='toast',3400);
+}
+
+const VND = (function() {
+
+let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzyPLvRuwEsvXYDsLkVVYxaBfYopgPyQkQgKcy86bHVsca7sClVXDOwExqN5MN0CM97Uw/exec";
+
+let editingId = null;
+let selectedId = null;
+let sortField = "name";
+let sortDir = "asc";
+let autoRefreshTimer = null;
+
+const SEED_DATA = [{"id":"1","name":"AMAZON WEB SERVICES EMEA SARL","trn":"100622112900003","desc":"IT PRODUCTS PURCHASED","category":"IT & Technology","country":"UAE","status":"Active"},{"id":"2","name":"EMIRATES TELECOMMUNICATIONS GROUP COMPANY (ETISALAT GROUP) P.J.S.C.","trn":"100023129800003","desc":"TELECOM SERVICES","category":"Telecom","country":"UAE","status":"Active"},{"id":"3","name":"EMAAR PROPERTIES P.J.S.C.","trn":"100011079900003","desc":"BASE RENT AND SERVICE CHARGES","category":"Real Estate","country":"UAE","status":"Active"},{"id":"4","name":"Q TECH GENERAL TRADING LLC","trn":"100483307300003","desc":"STATIONERY ITEM","category":"IT & Technology","country":"UAE","status":"Active"},{"id":"5","name":"BIN ATIF GENERAL TRADING CO LLC","trn":"104232806000003","desc":"STATIONERY ITEM","category":"Trading & Supplies","country":"UAE","status":"Active"},{"id":"6","name":"PRIME RENOVATE TECHNICAL SERVICES EST.","trn":"104783785900003","desc":"SKILLED MANPOWER","category":"Other","country":"UAE","status":"Active"},{"id":"7","name":"VAI MARKETING MANAGEMENT LLC","trn":"100528734500003","desc":"AS PER SERVICE AGREEMENT","category":"Consulting","country":"UAE","status":"Active"},{"id":"8","name":"GOSHICHAND GENERAL TRADING (L.L.C)","trn":"100296691700003","desc":"GOVERNMENT FEES","category":"Govt & PRO Services","country":"UAE","status":"Active"},{"id":"9","name":"QATAR INSURANCE CO.","trn":"100284682000003","desc":"INSURANCE","category":"Insurance","country":"UAE","status":"Active"},{"id":"10","name":"SIGN ART GIFTS TRADING LLC","trn":"100324875200003","desc":"PANTRY ITEMS","category":"Trading & Supplies","country":"UAE","status":"Active"},{"id":"11","name":"GRAND MILLENNIUM HOTEL DUBAI (FZ)","trn":"100027081700003","desc":"MEETING CHARGES","category":"Hospitality","country":"UAE","status":"Active"},{"id":"12","name":"WIO BANK P.J.S.C","trn":"100446228700003","desc":"BANK SERVICE CHARGE","category":"Banking","country":"UAE","status":"Active"},{"id":"13","name":"COMMERCIAL BANK OF DUBAI (PSC)","trn":"100252062300003","desc":"BANK SERVICE CHARGE","category":"Banking","country":"UAE","status":"Active"},{"id":"14","name":"THREE DIAMONDS LEASING PROPERTY BROKERAGE AGENTS L.L.C","trn":"100464388600003","desc":"WAREHOUSE RENTAL BROKERAGE","category":"Real Estate","country":"UAE","status":"Active"},{"id":"16","name":"DUBAI INSURANCE COMPANY (PSC)","trn":"104471000000000","desc":"INSURANCE","category":"Insurance","country":"UAE","status":"Active"},{"id":"19","name":"CAPITOL REAL ESTATE LLC","trn":"100274084100003","desc":"RENT AND OTHER CHARGES","category":"Real Estate","country":"UAE","status":"Active"},{"id":"22","name":"EMIRATES NBD BANK PJSC","trn":"100035307600003","desc":"BANK SERVICE CHARGE","category":"Banking","country":"UAE","status":"Active"},{"id":"24","name":"FEDEX EXPRESS INTERNATIONAL B.V., (DUBAI BRANCH)","trn":"100019089000003","desc":"SHIPPING FEES","category":"Logistics","country":"UAE","status":"Active"},{"id":"25","name":"ARAMEX EMIRATES LLC","trn":"100212963100003","desc":"SHIPPING FEES","category":"Logistics","country":"UAE","status":"Active"},{"id":"26","name":"TAKAFUL EMARAT INSURANCE (P.S.C.)","trn":"100001445400003","desc":"EMPLOYEE INSURANCE","category":"Insurance","country":"UAE","status":"Active"},{"id":"28","name":"NASSAR H BAJAMAL (NHB LEGAL) LIMITED","trn":"100475259600003","desc":"LEGAL EXPENSE","category":"Legal","country":"UAE","status":"Active"},{"id":"29","name":"QATAR INSURANCE COMPANY","trn":"100000643500003","desc":"EMPLOYEE INSURANCE","category":"Insurance","country":"UAE","status":"Active"},{"id":"31","name":"ABDULLATIF AL HAMMADI ADVOCATES AND LEGAL CONSULTANTS","trn":"100392519300003","desc":"LEGAL FEES","category":"Legal","country":"UAE","status":"Active"},{"id":"33","name":"RAS AL KHAIMAH NATIONAL INSURANCE CO. P.S.C","trn":"100021693500003","desc":"INSURANCE","category":"Insurance","country":"UAE","status":"Active"},{"id":"34","name":"IRSHAD KASHIM AND MOHAMMED AMEER STATIONERY L.L.C","trn":"104093785400003","desc":"RING BINDER FOR OFFICE USE","category":"Trading & Supplies","country":"UAE","status":"Active"},{"id":"35","name":"MICROLESS GENERAL TRADING L.L.C","trn":"100456601200003","desc":"OFFICE CHAIR","category":"Trading & Supplies","country":"UAE","status":"Active"},{"id":"37","name":"D H C TECHNICAL SERVICES LLC","trn":"104905656500001","desc":"AC DUCT CLEANING","category":"IT & Technology","country":"UAE","status":"Active"},{"id":"38","name":"AL HASANIYA DOCUMENTS CLEARING SERVICES","trn":"104415960400003","desc":"LABOUR CANCELLATION","category":"Govt & PRO Services","country":"UAE","status":"Active"},{"id":"39","name":"ALREAYA GOVERNMENT TRANSACTION CENTER","trn":"100317972600003","desc":"NORMAL MEDICAL","category":"Healthcare","country":"UAE","status":"Active"},{"id":"40","name":"ADAMJEE INSURANCE COMPANY LIMITED","trn":"100000253300003","desc":"GROUP INSURANCE","category":"Insurance","country":"UAE","status":"Active"},{"id":"41","name":"AL KARAMA MEDICAL FITNESS CENTER","trn":"100047983000003","desc":"CONTRACT SUBMISSION","category":"Healthcare","country":"UAE","status":"Active"},{"id":"42","name":"GUARDFORCE SECURITY SERVICES","trn":"100214694000003","desc":"SECURITY SERVICES","category":"Security","country":"UAE","status":"Active"},{"id":"43","name":"TAG TRADING","trn":"100350515100003","desc":"","category":"Trading & Supplies","country":"UAE","status":"Active"},{"id":"46","name":"BASEPOINT BUSINESS CENTRE L.L.C","trn":"100606690400003","desc":"OFFICE ITEMS","category":"Trading & Supplies","country":"UAE","status":"Active"},{"id":"47","name":"BAHRI & MAZROEI TECHNICAL SYSTEMS CO. LLC","trn":"100254605700003","desc":"AMC SERVICE","category":"Real Estate","country":"UAE","status":"Active"},{"id":"48","name":"DUBAI ELECTRICITY AND WATER AUTHORITY","trn":"100027620200003","desc":"ELECTRICITY FOR OFFICE","category":"Utilities","country":"UAE","status":"Active"},{"id":"49","name":"ATOP COMPUTER SOLUTION LLC","trn":"104046676300003","desc":"IT PRODUCTS PURCHASED","category":"IT & Technology","country":"UAE","status":"Active"},{"id":"50","name":"LOGIC OFFICE EQUIPMENTS L.L.C","trn":"100213676800003","desc":"OFFICE ITEMS","category":"Trading & Supplies","country":"UAE","status":"Active"},{"id":"51","name":"SILK HOUSE GENERAL TRADING LLC","trn":"100267884300001","desc":"WAREHOUSE RENT","category":"Real Estate","country":"UAE","status":"Active"},{"id":"52","name":"UNICOM IT SOLUTIONS LLC","trn":"104265579300003","desc":"IT PRODUCTS PURCHASED","category":"IT & Technology","country":"UAE","status":"Active"},{"id":"53","name":"AL BARSHA PRIVATE NOTARY SERVICES","trn":"104260292800003","desc":"NOTARY PUBLIC SERVICES","category":"Legal","country":"UAE","status":"Active"},{"id":"54","name":"AFAQ ACCOUNTING & MANAGEMENT SERVICES LLC","trn":"104029769700003","desc":"LIQUIDATION SERVICES","category":"Consulting","country":"UAE","status":"Active"},{"id":"55","name":"AL DEYAFA GOVERNMENT TRANSACTIONS CENTER L.L.C","trn":"104110131000003","desc":"VISA PROCESSING SERVICES","category":"Govt & PRO Services","country":"UAE","status":"Active"},{"id":"57","name":"BANDIDOS RETAIL L.L.C","trn":"100265405900003","desc":"OFFICE SUPPLIES","category":"Trading & Supplies","country":"UAE","status":"Active"},{"id":"58","name":"BRIGHTEST TRADING L.L.C","trn":"100393862600003","desc":"OFFICE SUPPLIES","category":"Trading & Supplies","country":"UAE","status":"Active"},{"id":"60","name":"FID WOODGREEN BUILDING CONTRACTING LLC","trn":"100518040900003","desc":"OFFICE MAINTENANCE","category":"Maintenance & FM","country":"UAE","status":"Active"},{"id":"61","name":"FIRE GUYZ TECHNICAL SERVICES LLC","trn":"100555119500003","desc":"FIRE PREVENTIVE MAINTENANCE","category":"IT & Technology","country":"UAE","status":"Active"},{"id":"63","name":"MOOD ESPRESSO LLC","trn":"100227805700003","desc":"OFFICE SUPPLIES","category":"Trading & Supplies","country":"UAE","status":"Active"},{"id":"67","name":"QUICK DRIVE RENT A CARS L.L.C","trn":"100541542500003","desc":"CAR RENTALS","category":"Real Estate","country":"UAE","status":"Active"},{"id":"68","name":"SENYAR REAL ESTATE ONE PERSON COMPANY LLC","trn":"100614438800003","desc":"RENT AND SERVICE CHARGES","category":"Real Estate","country":"UAE","status":"Active"},{"id":"69","name":"THE ROCKET SCIENCE GROUP LLC","trn":"104063839500003","desc":"QUICKBOOKS SUBSCRIPTION","category":"IT & Technology","country":"UAE","status":"Active"},{"id":"70","name":"VAH GENERAL TRADING LLC","trn":"100236910400003","desc":"OFFICE SUPPLIES","category":"Trading & Supplies","country":"UAE","status":"Active"},{"id":"72","name":"DOWNTOWN BUSINESS CENTER LLC","trn":"100323036200003","desc":"MEETING ROOM CHARGES","category":"Other","country":"UAE","status":"Active"},{"id":"76","name":"TECH CHIPS FOR COMPUTERS AND REQUISITES TRADING L.L.C","trn":"100522763000003","desc":"IT SUPPLIES","category":"IT & Technology","country":"UAE","status":"Active"},{"id":"78","name":"ACSC COMPUTER ELECTRIC TRADING LLC","trn":"104256829300003","desc":"IT SUBSCRIPTION","category":"IT & Technology","country":"UAE","status":"Active"},{"id":"79","name":"OVERKLOUD TECHNOLOGY SOLUTIONS LLC","trn":"105005521700003","desc":"WORKSPACE BUSINESS STANDARD","category":"IT & Technology","country":"UAE","status":"Active"},{"id":"81","name":"EMIRATES INTEGRATED TELECOMMUNICATIONS COMPANY PJSC","trn":"100001397700003","desc":"TELEPHONE CHARGES","category":"Telecom","country":"UAE","status":"Active"},{"id":"82","name":"MICROSOFT IRELAND OPERATIONS LIMITED","trn":"100389298900003","desc":"ONLINE SERVICES","category":"IT & Technology","country":"UAE","status":"Active"},{"id":"83","name":"NEO FAMILY FZ-LLC","trn":"104260411400003","desc":"IT CONSULTATION SERVICES","category":"IT & Technology","country":"UAE","status":"Active"},{"id":"84","name":"HORYS GLOBAL ELECTRONICS TRADING L.L.C","trn":"104126126200003","desc":"CONSULTANCY FEE","category":"Consulting","country":"UAE","status":"Active"},{"id":"85","name":"CBA TECHNOLOGY SOLUTION LLC","trn":"104138423900003","desc":"CONSULTANCY FEE","category":"IT & Technology","country":"UAE","status":"Active"},{"id":"86","name":"LMNTO PERFORMANCE INFORMATION TECHNOLOGY LLC","trn":"104036818300003","desc":"CONSULTANCY FEE","category":"IT & Technology","country":"UAE","status":"Active"},{"id":"89","name":"ARI MARKETING MANAGEMENT LLC","trn":"104376907200003","desc":"CONSULTANCY FEE","category":"Consulting","country":"UAE","status":"Active"},{"id":"90","name":"HOLIDAY INN","trn":"104112355300003","desc":"HOTEL BOOKING","category":"Hospitality","country":"UAE","status":"Active"},{"id":"92","name":"SEMRUSH INC","trn":"104117589200003","desc":"SUBSCRIPTION","category":"IT & Technology","country":"UAE","status":"Active"},{"id":"93","name":"UNICON REAL ESTATE BROKER LLC","trn":"100320317900003","desc":"RENTAL COMMISSION","category":"Real Estate","country":"UAE","status":"Active"},{"id":"95","name":"LANDMARK TWO INVESTMENTS IN TOURIST LLC","trn":"100006929200003","desc":"HOTEL BOOKING","category":"Hospitality","country":"UAE","status":"Active"},{"id":"96","name":"KINGO SMART TRAVEL AND TOURISM","trn":"103295240800003","desc":"REVERSAL OF INPUT VAT","category":"Travel & Events","country":"UAE","status":"Active"},{"id":"98","name":"TWINS INTERNATIONAL TECHNOLOGY LLC","trn":"104865136600003","desc":"WEBSITE DESIGN AND DEVELOPMENT","category":"IT & Technology","country":"UAE","status":"Active"},{"id":"99","name":"DOUBLETREE BY HILTON DUBAI BUSINESS BAY HOTEL LLC","trn":"100254328600003","desc":"GUEST ACCOMMODATION","category":"Hospitality","country":"UAE","status":"Active"},{"id":"100","name":"GO BUS TOURISM LLC","trn":"100452777000003","desc":"TRANSPORTATION","category":"Logistics","country":"UAE","status":"Active"},{"id":"101","name":"CREED AND BEAR NETWORK LLC","trn":"104215207200003","desc":"PROFESSIONAL SERVICES","category":"Consulting","country":"UAE","status":"Active"},{"id":"105","name":"IMPACTWORKS MARKETING AND MANAGEMENT L.L.C","trn":"104639985100003","desc":"CONSULTANCY SERVICE FEE","category":"Consulting","country":"UAE","status":"Active"},{"id":"106","name":"LMNTO CONSULTANCY TECHNICAL LLC","trn":"104752644500003","desc":"IT CONSULTANCY SERVICES","category":"IT & Technology","country":"UAE","status":"Active"},{"id":"108","name":"VISION TRANSLATION","trn":"100331313500003","desc":"INTERPRETERS CHARGES","category":"Other","country":"UAE","status":"Active"},{"id":"113","name":"NEXGEN TAX AND ACCOUNTING LLC","trn":"104629807900003","desc":"ACCOUNTING SERVICE FEES","category":"Consulting","country":"UAE","status":"Active"},{"id":"114","name":"YACHT DO YOU WANT - FZCO","trn":"104260102900003","desc":"CLIENT EVENT BOOKING","category":"Travel & Events","country":"UAE","status":"Active"},{"id":"116","name":"SKILL MASTERY CUSTOMER CARE CENTRE LLC","trn":"104630780500003","desc":"CONSULTANCY SERVICE FEE","category":"Consulting","country":"UAE","status":"Active"},{"id":"118","name":"RAYNA TOURISM LLC","trn":"100026690600003","desc":"CLIENT EVENT BOOKING","category":"Travel & Events","country":"UAE","status":"Active"},{"id":"119","name":"MIRAL EXPERIENCES LLC","trn":"104138438700003","desc":"CLIENT EVENT BOOKING","category":"Travel & Events","country":"UAE","status":"Active"},{"id":"122","name":"ARIOS 21 HR CONSULTANCIES LLC","trn":"104748107000003","desc":"CONSULTANCY SERVICE FEE","category":"Consulting","country":"UAE","status":"Active"},{"id":"124","name":"ABU DHABI COMMERCIAL BANK PJSC","trn":"100228495600003","desc":"ADCB BANK CHARGES","category":"Banking","country":"UAE","status":"Active"},{"id":"125","name":"AL ALI PROPERTY INVESTMENT LLC","trn":"100242240800003","desc":"EJARI FEES","category":"Real Estate","country":"UAE","status":"Active"},{"id":"126","name":"ORIENT INSURANCE P.J.S.C.","trn":"100069559100003","desc":"INSURANCE PREMIUM","category":"Insurance","country":"UAE","status":"Active"},{"id":"128","name":"BELLA COFFEE L.L.C","trn":"100347315200003","desc":"PANTRY SUPPLIES","category":"Trading & Supplies","country":"UAE","status":"Active"},{"id":"130","name":"OPENAI, LLC","trn":"104747453900003","desc":"APP MONTHLY SUBSCRIPTION","category":"IT & Technology","country":"UAE","status":"Active"},{"id":"132","name":"FUNDROCK INVESTMENT MANAGEMENT SERVICES (ME) LTD","trn":"100012775100003","desc":"MANCO SERVICES FEES","category":"Consulting","country":"UAE","status":"Active"},{"id":"134","name":"TRADINGVIEW, INC.","trn":"104037245800003","desc":"PREMIUM SUBSCRIPTION","category":"IT & Technology","country":"UAE","status":"Active"},{"id":"138","name":"DIGITALOCEAN LLC","trn":"100502179300003","desc":"MONTHLY IT SUBSCRIPTION","category":"IT & Technology","country":"UAE","status":"Active"},{"id":"139","name":"FAST SPRING","trn":"100442919500003","desc":"MONTHLY IT SUBSCRIPTION","category":"IT & Technology","country":"UAE","status":"Active"},{"id":"140","name":"MASHREQBANK PSC","trn":"100282764800003","desc":"BANK CHARGES","category":"Banking","country":"UAE","status":"Active"},{"id":"142","name":"THE NATIONAL BANK OF RAS AL KHAIMAH (P.S.C.)","trn":"100272500800003","desc":"BANK CHARGES","category":"Banking","country":"UAE","status":"Active"},{"id":"145","name":"GULF VISION GOVERNMENT TRANSACTION","trn":"100614194700003","desc":"LICENSE PROCEDURES","category":"Govt & PRO Services","country":"UAE","status":"Active"},{"id":"149","name":"NOVALINK ENTERPRISE F Z E","trn":"104950272500003","desc":"Consultancy Service Fee","category":"Consulting","country":"UAE","status":"Active"},{"id":"150","name":"GM GLOBAL ENTERPRISE L.L.C - FZ","trn":"104034962100003","desc":"Consultancy Service Fee","category":"Consulting","country":"UAE","status":"Active"},{"id":"151","name":"SECURITY SHELLS INFOTECH DWC-LLC","trn":"104023638000003","desc":"Consultancy Service Fee","category":"IT & Technology","country":"UAE","status":"Active"}];
+
+let vendors = JSON.parse(JSON.stringify(SEED_DATA)).map(v=>({...v, trn:(v.trn||'').replace(/\s/g,'').replace(/-/g,'')}));
+
+function esc(str) { return String(str||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+function showToast(msg, type="success") {
+  const t=document.getElementById("vnd-toast");
+  if(!t) return;
+  t.textContent=msg; t.className="toast toast-"+type; t.style.display="flex";
+  setTimeout(()=>t.style.display="none",4000);
+}
+function setSyncing() { const d=document.getElementById("syncDot"); if(!d) return; d.className="sync-dot syncing"; document.getElementById("syncText").textContent="Syncing..."; }
+function setSynced()  { const d=document.getElementById("syncDot"); if(!d) return; d.className="sync-dot"; document.getElementById("syncText").textContent="Live"; }
+function setSyncError(){ const d=document.getElementById("syncDot"); if(!d) return; d.className="sync-dot error"; document.getElementById("syncText").textContent="Offline"; }
+
+async function apiGet() {
+  const res = await fetch(SCRIPT_URL + "?action=getAll", {
+    method: "GET",
+    redirect: "follow",
+  });
+  const data = await res.json();
+  return data.vendors || [];
+}
+async function apiPost(body) {
+  const res = await fetch(SCRIPT_URL, {
+    method: "POST",
+    redirect: "follow",
+    headers: { "Content-Type": "text/plain" },
+    body: JSON.stringify(body),
+  });
+  return await res.json();
+}
+
+async function loadData(showOverlay=true) {
+  // If no URL configured, show prompt and use seed data
+  if (!SCRIPT_URL) {
+    const ov=document.getElementById("vnd-loadingOverlay");
+    if(ov) ov.style.display="none";
+    setSyncError();
+    const dot = document.getElementById('syncDot');
+    const txt = document.getElementById('syncText');
+    if (dot) dot.className = 'sync-dot error';
+    if (txt) { txt.textContent = 'Not connected'; txt.title = 'Click ⚙ Settings to add your Google Sheets URL'; }
+    render();
+    // Attach search listeners
+    const si=document.getElementById('searchInput'),fc=document.getElementById('filterCat'),fs=document.getElementById('filterStatus');
+    if(si){si.addEventListener('input',renderTable);si.addEventListener('keyup',renderTable);}
+    if(fc)fc.addEventListener('change',renderTable);
+    if(fs)fs.addEventListener('change',renderTable);
+    return;
+  }
+  const ov=document.getElementById("vnd-loadingOverlay");
+  if(showOverlay&&ov) ov.style.display="flex";
+  setSyncing();
+  try {
+    const data=await apiGet();
+    if(data.length===0){
+      showToast("First run — seeding vendors...","info");
+      await apiPost({action:"seed",vendors:SEED_DATA});
+      vendors=JSON.parse(JSON.stringify(SEED_DATA));
+      showToast("✓ "+vendors.length+" vendors loaded!","success");
+    } else {
+      // Normalize TRN - strip all whitespace/formatting
+      vendors=data.map(v=>({...v, trn:(v.trn||'').replace(/\s/g,'').replace(/-/g,'')}));
+    }
+    setSynced();
+  } catch(e) {
+    setSyncError();
+    console.error("Google Sheets connection failed:", e.message || e);
+    const errMsg = e.message && e.message.includes("Failed to fetch")
+      ? "Cannot reach Google Sheets. Check: (1) URL is correct, (2) Script is deployed as 'Anyone' access."
+      : "Connection error: " + (e.message || "unknown");
+    showToast(errMsg, "error");
+    vendors = JSON.parse(JSON.stringify(SEED_DATA)).map(v=>({...v, trn:(v.trn||'').replace(/\s/g,'').replace(/-/g,'')}));
+  }
+  if(ov) ov.style.display="none";
+  render();
+  startAutoRefresh();
+  // Attach search listeners every time (safe to re-attach)
+  const si = document.getElementById('searchInput');
+  const fc = document.getElementById('filterCat');
+  const fs = document.getElementById('filterStatus');
+  if(si) {
+    si.addEventListener('input', renderTable);
+    si.addEventListener('keyup', renderTable);
+    si.addEventListener('change', renderTable);
+    si.oninput = renderTable;
+  }
+  if(fc) { fc.addEventListener('change', renderTable); fc.onchange = renderTable; }
+  if(fs) { fs.addEventListener('change', renderTable); fs.onchange = renderTable; }
+}
+
+function startAutoRefresh() {
+  clearInterval(autoRefreshTimer);
+  autoRefreshTimer=setInterval(async()=>{
+    try {
+      const data=await apiGet();
+      if(JSON.stringify(data)!==JSON.stringify(vendors)){vendors=data;render();showToast("🔄 Data updated","info");}
+    } catch(e){setSyncError();}
+  },15000);
+}
+
+function render(){ renderStats(); renderTable(); if(selectedId) renderDetail(); }
+
+function renderStats() {
+  const el=document.getElementById("vnd-stats"); if(!el) return;
+  const active=vendors.filter(v=>v.status==="Active").length;
+  const cats=new Set(vendors.map(v=>v.category)).size;
+  el.innerHTML=[
+    {label:"Total Vendors",val:vendors.length,color:"#fff"},
+    {label:"Active",val:active,color:"#86efac"},
+    {label:"Inactive",val:vendors.filter(v=>v.status==="Inactive").length,color:"#fca5a5"},
+    {label:"Under Review",val:vendors.filter(v=>v.status==="Under Review").length,color:"#fde68a"},
+    {label:"Categories",val:cats,color:"#c4b5fd"},
+  ].map(s=>`<div class="stat-card"><div class="stat-val" style="color:${s.color}">${s.val}</div><div class="stat-label">${s.label}</div></div>`).join("");
+}
+
+function renderTable() {
+  const q=(document.getElementById("searchInput")||{value:""}).value.toLowerCase();
+  const cat=(document.getElementById("filterCat")||{value:"All Categories"}).value;
+  const status=(document.getElementById("filterStatus")||{value:"All Statuses"}).value;
+  let filtered=vendors.filter(v=>{
+    const qDigits=q.replace(/[^0-9]/g,'');
+    const trnClean=(v.trn||'').replace(/[^0-9]/g,'');
+    const nameMatch=v.name.toLowerCase().includes(q);
+    const trnMatch=qDigits.length>0&&(trnClean.includes(qDigits));
+    const descMatch=(v.desc||'').toLowerCase().includes(q);
+    const catMatch=(v.category||'').toLowerCase().includes(q);
+    const match=!q||nameMatch||trnMatch||descMatch||catMatch;
+    return match&&(cat==="All Categories"||v.category===cat)&&(status==="All Statuses"||v.status===status);
+  }).sort((a,b)=>{
+    const av=a[sortField]||"",bv=b[sortField]||"";
+    return sortDir==="asc"?String(av).localeCompare(String(bv)):String(bv).localeCompare(String(av));
+  });
+  const rc=document.getElementById("recordCount"); if(rc) rc.textContent=filtered.length+" records";
+  ["name","trn","category","country","status"].forEach(c=>{const el=document.getElementById("s-"+c);if(el)el.textContent=sortField===c?(sortDir==="asc"?"▲":"▼"):"⇅";});
+  const tbody=document.getElementById("tableBody"); if(!tbody) return;
+  if(!filtered.length){
+    tbody.innerHTML = SCRIPT_URL
+      ? `<tr class="empty-row"><td colspan="7">No vendors found</td></tr>`
+      : `<tr class="empty-row"><td colspan="7" style="padding:24px;text-align:center;">
+          <div style="font-size:15px;margin-bottom:8px;">🔌 Not connected to Google Sheets</div>
+          <div style="font-size:12px;color:#94a3b8;margin-bottom:12px;">Showing built-in vendor data. Click <strong>⚙ Settings</strong> to connect your live sheet.</div>
+          <button onclick="VND.toggleSettings()" style="padding:7px 16px;background:#1e40af;color:#fff;border:none;border-radius:7px;font-size:12px;cursor:pointer;font-weight:600;">⚙ Open Settings</button>
+        </td></tr>`;
+    return;
+  }
+  tbody.innerHTML=filtered.map(v=>`
+    <tr class="${selectedId===String(v.id)?'selected':''}" onclick="VND.selectVendor('${v.id}')">
+      <td class="td-name">${esc(v.name)}</td>
+      <td class="td-trn">${esc(v.trn)}</td>
+      <td><span class="badge badge-cat">${esc(v.category)}</span></td>
+      <td style="color:#64748b;font-size:12px">${esc(v.country||"UAE")}</td>
+      <td><span class="badge ${v.status==='Active'?'badge-active':v.status==='Inactive'?'badge-inactive':'badge-review'}">${v.status}</span></td>
+      <td style="color:#64748b;font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(v.desc||"—")}</td>
+      <td><div class="td-actions" onclick="event.stopPropagation()">
+        <button class="btn-edit" onclick="VND.openEdit('${v.id}')">Edit</button>
+        <button class="btn-del" onclick="VND.deleteVendor('${v.id}')">Del</button>
+      </div></td>
+    </tr>`).join("");
+}
+
+function sortBy(field){if(sortField===field)sortDir=sortDir==="asc"?"desc":"asc";else{sortField=field;sortDir="asc";}renderTable();}
+function selectVendor(id){selectedId=selectedId===String(id)?null:String(id);renderTable();renderDetail();}
+
+function renderDetail() {
+  const panel=document.getElementById("detailPanel"); if(!panel) return;
+  if(!selectedId){panel.style.display="none";return;}
+  const v=vendors.find(x=>String(x.id)===selectedId);
+  if(!v){panel.style.display="none";return;}
+  panel.style.display="block";
+  panel.innerHTML=`<div class="detail-panel">
+    <div class="detail-header">
+      <div class="detail-title">${esc(v.name)}</div>
+      <button class="btn-close" onclick="VND.selectVendor('${v.id}')">✕</button>
+    </div>
+    <div class="detail-grid">
+      <div class="detail-item"><label>TRN</label>
+        <span style="font-family:monospace;font-size:15px;display:block;margin-bottom:8px">${esc(v.trn||"—")}</span>
+        <a href="https://tax.gov.ae/en/" target="_blank" style="display:inline-flex;align-items:center;gap:5px;background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;border-radius:6px;padding:5px 11px;font-size:11px;font-weight:700;text-decoration:none;">🔍 Verify on FTA Portal ↗</a>
+      </div>
+      ${[["Category",v.category],["Country",v.country||"UAE"],["Status",v.status],["Description",v.desc]].map(([l,val])=>`
+        <div class="detail-item"><label>${l}</label><span>${esc(val||"—")}</span></div>`).join("")}
+    </div>
+    <div class="detail-actions">
+      <button class="btn-primary" style="background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;" onclick="VND.openEdit('${v.id}')">Edit Vendor</button>
+      <button class="btn-danger" onclick="VND.deleteVendor('${v.id}')">Remove Vendor</button>
+    </div>
+  </div>`;
+}
+
+function openAdd(){
+  editingId=null;
+  document.getElementById("modalTitle").textContent="Add New Vendor";
+  document.getElementById("submitBtn").textContent="Add Vendor";
+  ["vnd-f-name","vnd-f-trn","vnd-f-desc"].forEach(f=>{const el=document.getElementById(f);if(el)el.value="";});
+  const fc=document.getElementById("vnd-f-country");if(fc)fc.value="UAE";
+  const fcat=document.getElementById("vnd-f-category");if(fcat)fcat.selectedIndex=0;
+  const fst=document.getElementById("vnd-f-status");if(fst)fst.value="Active";
+  const mo=document.getElementById("vnd-modalOverlay");if(mo){mo.style.display="flex";requestAnimationFrame(()=>mo.classList.add("open"));}
+}
+function openEdit(id){
+  const v=vendors.find(x=>String(x.id)===String(id));if(!v)return;
+  editingId=String(id);
+  document.getElementById("modalTitle").textContent="Edit Vendor";
+  document.getElementById("submitBtn").textContent="Save Changes";
+  const fn=document.getElementById("vnd-f-name");if(fn)fn.value=v.name||"";
+  const ft=document.getElementById("vnd-f-trn");if(ft)ft.value=v.trn||"";
+  const fc=document.getElementById("vnd-f-country");if(fc)fc.value=v.country||"UAE";
+  const fd=document.getElementById("vnd-f-desc");if(fd)fd.value=v.desc||"";
+  const fcat=document.getElementById("vnd-f-category");if(fcat)fcat.value=v.category||"Other";
+  const fst=document.getElementById("vnd-f-status");if(fst)fst.value=v.status||"Active";
+  const mo=document.getElementById("vnd-modalOverlay");if(mo){mo.style.display="flex";requestAnimationFrame(()=>mo.classList.add("open"));}
+}
+function closeModal(){
+  const mo=document.getElementById("vnd-modalOverlay");
+  if(mo){mo.classList.remove("open");setTimeout(()=>{mo.style.display="none";},260);}
+}
+function overlayClose(e){if(e.target.id==="vnd-modalOverlay")closeModal();}
+
+async function submitForm(){
+  const nameEl=document.getElementById("vnd-f-name"),trnEl=document.getElementById("vnd-f-trn");
+  if(!nameEl||!trnEl)return;
+  const name=nameEl.value.trim(),trn=trnEl.value.trim();
+  if(!name||!trn)return showToast("Name and TRN are required","error");
+  if(!/^\d{15}$/.test(trn))return showToast("TRN must be exactly 15 digits","error");
+  const vendor={name,trn,
+    country:(document.getElementById("vnd-f-country")||{value:"UAE"}).value.trim()||"UAE",
+    desc:(document.getElementById("vnd-f-desc")||{value:""}).value.trim(),
+    category:(document.getElementById("vnd-f-category")||{value:"Other"}).value,
+    status:(document.getElementById("vnd-f-status")||{value:"Active"}).value,
+  };
+  const btn=document.getElementById("submitBtn");
+  if(btn){btn.textContent="Saving...";btn.disabled=true;}
+  setSyncing();
+  try {
+    if(editingId){
+      vendor.id=editingId;
+      await apiPost({action:"update",vendor});
+      showToast("✓ Vendor updated","success");
+    } else {
+      const nums=vendors.map(v=>parseInt(v.id)).filter(n=>!isNaN(n));
+      vendor.id=nums.length?(Math.max(...nums)+1).toString():"1";
+      await apiPost({action:"add",vendor});
+      showToast("✓ Vendor added","success");
+    }
+    closeModal();
+    await loadData(false);
+  } catch(e){showToast("Error saving — check connection","error");setSyncError();}
+  if(btn){btn.textContent=editingId?"Save Changes":"Add Vendor";btn.disabled=false;}
+}
+
+async function deleteVendor(id){
+  if(!confirm("Remove this vendor?"))return;
+  setSyncing();
+  try{
+    await apiPost({action:"delete",id});
+    if(selectedId===String(id))selectedId=null;
+    showToast("✓ Vendor removed","success");
+    await loadData(false);
+  }catch(e){showToast("Error deleting","error");setSyncError();}
+}
+
+function exportCSV(){
+  const qv=(document.getElementById("searchInput")||{value:""}).value.toLowerCase();
+  const cat=(document.getElementById("filterCat")||{value:"All Categories"}).value;
+  const status=(document.getElementById("filterStatus")||{value:"All Statuses"}).value;
+  const filtered=vendors.filter(v=>{
+    const match=!qv||v.name.toLowerCase().includes(qv)||(v.trn||"").includes(qv);
+    return match&&(cat==="All Categories"||v.category===cat)&&(status==="All Statuses"||v.status===status);
+  });
+  const rows=filtered.map(v=>[v.name,v.trn,v.category,v.country||"UAE",v.status,v.desc||""].map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(","));
+  const csv=[["Vendor Name","TRN","Category","Country","Status","Description"].join(","),...rows].join("\n");
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+  a.download="vendor_trn_"+new Date().toISOString().slice(0,10)+".csv";a.click();
+  showToast("✓ CSV exported","success");
+}
+
+
+function toggleSettings() {
+  const panel = document.getElementById('vnd-settings-panel');
+  if (!panel) return;
+  const isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : 'block';
+  if (!isOpen) {
+    const inp = document.getElementById('vnd-script-url-input');
+    if (inp) inp.value = SCRIPT_URL || '';
+  }
+}
+
+function saveScriptUrl() {
+  const inp = document.getElementById('vnd-script-url-input');
+  const status = document.getElementById('vnd-url-status');
+  if (!inp) return;
+  const url = inp.value.trim();
+  if (!url.includes('script.google.com')) {
+    if (status) status.textContent = '⚠ Please paste a valid Apps Script URL (should contain script.google.com)';
+    return;
+  }
+  SCRIPT_URL = url;
+  if (status) status.textContent = '✅ URL updated! Reconnecting…';
+  toggleSettings();
+  loadData(true);
+}
+
+// URL is hardcoded — no restore needed
+
+
+async function testConnection() {
+  const inp = document.getElementById('vnd-script-url-input');
+  const status = document.getElementById('vnd-url-status');
+  const url = (inp ? inp.value.trim() : SCRIPT_URL);
+  if (!url) { if(status) status.textContent = '⚠ No URL entered'; return; }
+  if(status) status.textContent = '⏳ Testing connection…';
+  try {
+    const res = await fetch(url + "?action=getAll", { method: "GET", redirect: "follow" });
+    const data = await res.json();
+    if(status) status.textContent = data.vendors !== undefined
+      ? '✅ Connected! Found ' + data.vendors.length + ' vendors in your sheet.'
+      : '⚠ Connected but unexpected response: ' + JSON.stringify(data).slice(0,100);
+  } catch(e) {
+    if(status) status.innerHTML = '❌ Failed: ' + (e.message||'unknown error') +
+      '<br><small>Make sure: Deploy → Web app → Execute as <b>Me</b> → Who has access: <b>Anyone</b></small>';
+  }
+}
+
+return { loadData, openAdd, openEdit, closeModal, overlayClose, submitForm, deleteVendor, exportCSV, sortBy, selectVendor, renderTable, toggleSettings, saveScriptUrl, testConnection };
+})();
+
+
+// ── Vendor tab ───────────────────────────────────
+let vendorLoaded = false;
+function showVendorTab(btn) {
+  showTab('vendor', btn);
+  if (!vendorLoaded) { vendorLoaded = true; VND.loadData(); }
+}
+
+</script>
+</body>
+</html>
